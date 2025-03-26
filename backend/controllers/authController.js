@@ -45,3 +45,42 @@ exports.signup = async (req, res, next) => {
     });
   }
 };
+
+exports.login = async (req, res, next) => {
+  try {
+    // receive user data
+    const { email, password } = req.body;
+
+    // check if user exists and password is correct
+    const user = await User.findOne({ email });
+
+    if (user && (await user.matchPassword(password))) {
+      // if yes, generate token and login
+      const token = generateToken(user._id);
+
+      res.status(200).json({
+        status: "success",
+        token,
+        data: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+        },
+      });
+
+      logger.info(`User logged in: ${user.user}`);
+    } else {
+      // other wiese show error
+      res.status(401).json({
+        message: "Invalid email or password",
+      });
+    }
+  } catch (error) {
+    logger.error(`Login error: ${error.message}`);
+    res.status(500).json({
+      message: "Server error during login",
+      error: process.env.NODE_ENV === "development" ? error.message : "",
+    });
+    next(error);
+  }
+};
