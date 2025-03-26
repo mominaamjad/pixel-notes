@@ -24,6 +24,12 @@ const UserSchema = new mongoose.Schema(
     confirmPassword: {
       type: String,
       required: [true, "Please confirm your password"],
+      validate: {
+        validator: function (value) {
+          return value === this.password;
+        },
+        message: "Passwords do not match!",
+      },
     },
     status: {
       type: String,
@@ -40,19 +46,22 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
+// mongoose middlewares
+
+// hash the password
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
   try {
-    const salt = await bcrypt.genSalt(10);
-
-    this.password = await bcrypt.hash(this.password, salt);
+    this.password = await bcrypt.hash(this.password, 12);
+    this.confirmPassword = undefined;
     next();
   } catch (error) {
     next(error);
   }
 });
 
+// when logging in
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
