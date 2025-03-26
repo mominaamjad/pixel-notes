@@ -1,6 +1,7 @@
 const express = require("express");
-const { httpLogger, logger } = require("./config/logger.js");
 const cors = require("cors");
+const { httpLogger, logger } = require("./config/logger.js");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
@@ -11,7 +12,10 @@ app.use(httpLogger);
 app.use(cors());
 app.use(express.json());
 
-// Global error handler
+// mounting of routes
+app.use("/api/users", userRoutes);
+
+// global error handler
 app.use((err, req, res, next) => {
   logger.error({
     message: err.message,
