@@ -27,9 +27,9 @@ exports.protect = async (req, res, next) => {
     } catch (error) {
       logger.error(`Authorization error: ${error.message}`);
       res.status(401).json({
-        status: "unaauthorized",
+        status: "unauthorized",
         message: "Not authorized",
-        error: process.env.NODE_ENV === "development" ? error.message : "",
+        error: error.message,
       });
     }
 

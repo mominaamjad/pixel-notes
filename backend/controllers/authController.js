@@ -9,6 +9,20 @@ const generateToken = (userId) => {
   });
 };
 
+const createSendToken = (user, statusCode, res) => {
+  const token = generateToken(user._id);
+
+  res.status(statusCode).json({
+    status: "success",
+    token,
+    data: {
+      id: user._id,
+      email: user.email,
+      name: user.name,
+    },
+  });
+};
+
 exports.signup = async (req, res, next) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
@@ -28,12 +42,8 @@ exports.signup = async (req, res, next) => {
       confirmPassword,
     });
 
-    const token = generateToken(newUser._id);
+    createSendToken(newUser, 201, res);
 
-    res.status(201).json({
-      status: "success",
-      token,
-    });
     logger.info(`New user registered with mail ${newUser.email}`);
   } catch (error) {
     logger.error(`Registration error: ${error.message}`);
@@ -55,12 +65,7 @@ exports.login = async (req, res, next) => {
 
     if (user && (await user.matchPassword(password))) {
       // if yes, generate token and login
-      const token = generateToken(user._id);
-
-      res.status(200).json({
-        status: "success",
-        token,
-      });
+      createSendToken(user, 200, res);
 
       logger.info(`User logged in: ${user.name}`);
     } else {
@@ -91,14 +96,7 @@ exports.getUserProfile = async (req, res, next) => {
       });
     }
 
-    res.status(200).json({
-      status: "success",
-      data: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
-    });
+    createSendToken(user, 200, res);
   } catch (error) {
     logger.error(`Profile fetch error: ${error.message}`);
     res.status(500).json({
@@ -159,7 +157,6 @@ exports.forgotPassword = async (req, res, next) => {
   }
 };
 
-// TODO:reset password, change password
 exports.resetPassword = async (req, res, next) => {
   try {
     const hashedToken = crypto
@@ -185,16 +182,50 @@ exports.resetPassword = async (req, res, next) => {
     user.passwordResetExpires = undefined;
     await user.save({ validateModifiedOnly: true });
 
-    const token = generateToken(user._id);
-
-    res.status(200).json({
-      status: "success",
-      token,
-    });
+    createSendToken(user, 200, res);
   } catch (error) {
     res.status(500).json({
       status: "internal_server_error",
       message: "Error resetting password",
+      error: error.message,
+    });
+  }
+};
+
+// the logged in user can update password
+exports.updatePassword = async (req, res, next) => {
+  try {
+    // get user from request
+    const user = await User.findById(req.user.id).select("+password");
+
+    if (!req.body.password || !user) {
+      return res.status(400).json({
+        status: "bad_request",
+        message: "User does not exist or current password is required",
+      });
+    }
+
+    // check if past password corret
+    const isPasswordCorrect = await user.matchPassword(req.body.password);
+
+    if (!isPasswordCorrect) {
+      res.status(401).json({
+        status: "unauthorized",
+        message: "Incorrect Password",
+      });
+    }
+
+    // update password
+    user.password = req.body.newPassword;
+    user.confirmPassword = req.body.confirmNewPassword;
+    await user.save({ validateModifiedOnly: true });
+
+    // get new token
+    createSendToken(user, 200, res);
+  } catch (error) {
+    res.status(500).json({
+      status: "internal_server_error",
+      message: "Cannot update password",
       error: error.message,
     });
   }
