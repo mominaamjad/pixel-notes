@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const User = require("../models/users");
 const sendEmail = require("../utils/email");
 
@@ -32,11 +33,6 @@ exports.signup = async (req, res, next) => {
     res.status(201).json({
       status: "success",
       token,
-      data: {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-      },
     });
     logger.info(`New user registered with mail ${newUser.email}`);
   } catch (error) {
@@ -64,11 +60,6 @@ exports.login = async (req, res, next) => {
       res.status(200).json({
         status: "success",
         token,
-        data: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-        },
       });
 
       logger.info(`User logged in: ${user.name}`);
@@ -169,4 +160,42 @@ exports.forgotPassword = async (req, res, next) => {
 };
 
 // TODO:reset password, change password
-exports.resetPassword = async (req, res, next) => {};
+exports.resetPassword = async (req, res, next) => {
+  try {
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      res.status(400).json({
+        status: "bad_request",
+        message: "Token is invalid or not found",
+      });
+    }
+
+    user.password = req.body.password;
+    user.confirmPassword = req.body.confirmPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateModifiedOnly: true });
+
+    const token = generateToken(user._id);
+
+    res.status(200).json({
+      status: "success",
+      token,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "internal_server_error",
+      message: "Error resetting password",
+      error: error.message,
+    });
+  }
+};

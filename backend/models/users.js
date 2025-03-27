@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema(
         message: "Passwords do not match!",
       },
     },
+    changedPasswordAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
     status: {
@@ -62,6 +63,14 @@ userSchema.pre("save", async function (next) {
   } catch (error) {
     next(error);
   }
+});
+
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password") || this.new) return next();
+
+  // one second less to ensure token always generated after password change
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
 });
 
 // when logging in
