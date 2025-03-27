@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/users");
+const sendEmail = require("../utils/email");
 
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
@@ -115,3 +116,57 @@ exports.getUserProfile = async (req, res, next) => {
     });
   }
 };
+
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+
+    if (!user) {
+      res.status(404).json({
+        status: "not_found",
+        message: "user does not exist",
+      });
+    }
+
+    // generate random token for reset
+    const resetToken = user.createPasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+
+    // send it to users email
+    const resetUrl = `${req.protocol}://${req.get(
+      "host"
+    )}/api/users/resetPassword/${resetToken}`;
+    const message = `Forgot you password??? Submit a new password on this URL to : ${resetUrl} \n This is only valid for 10 min`;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "Reset Your Password For Pixel Notes",
+        message,
+      });
+
+      res.status(200).json({
+        status: "success",
+        message: "Token sent to mail",
+      });
+    } catch (error) {
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+
+      res.status(500).json({
+        status: "internal_server_error",
+        message: "there was an error sending the email",
+        error: error.message, // ✅ Return error message for debugging
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: "internal_server_error",
+      message: "there was an error in reseting the password",
+    });
+  }
+};
+
+// TODO:reset password, change password
+exports.resetPassword = async (req, res, next) => {};

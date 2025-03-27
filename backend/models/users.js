@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
-const UserSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -31,6 +32,8 @@ const UserSchema = new mongoose.Schema(
         message: "Passwords do not match!",
       },
     },
+    passwordResetToken: String,
+    passwordResetExpires: Date,
     status: {
       type: String,
       enum: ["active", "inactive"],
@@ -49,7 +52,7 @@ const UserSchema = new mongoose.Schema(
 // mongoose middlewares
 
 // hash the password
-UserSchema.pre("save", async function (next) {
+userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
   try {
@@ -62,10 +65,26 @@ UserSchema.pre("save", async function (next) {
 });
 
 // when logging in
-UserSchema.methods.matchPassword = async function (enteredPassword) {
+userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-const User = mongoose.model("User", UserSchema);
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  // store encrypted token to db
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  console.log({ resetToken }, this.passwordResetToken);
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  // send user the unencrypted token
+  return resetToken;
+};
+
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;
