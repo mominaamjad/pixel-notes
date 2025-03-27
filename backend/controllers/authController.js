@@ -14,6 +14,7 @@ exports.signup = async (req, res, next) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
+        status: "bad_request",
         message: "User already exists",
       });
     }
@@ -40,6 +41,7 @@ exports.signup = async (req, res, next) => {
   } catch (error) {
     logger.error(`Registration error: ${error.message}`);
     res.status(500).json({
+      status: "internal_server_error",
       message: "Server error during registration",
       error: process.env.NODE_ENV === "development" ? error.message : "",
     });
@@ -68,19 +70,48 @@ exports.login = async (req, res, next) => {
         },
       });
 
-      logger.info(`User logged in: ${user.user}`);
+      logger.info(`User logged in: ${user.name}`);
     } else {
       // other wiese show error
       res.status(401).json({
+        status: "unauthorized",
         message: "Invalid email or password",
       });
     }
   } catch (error) {
     logger.error(`Login error: ${error.message}`);
     res.status(500).json({
-      message: "Server error during login",
+      message: "internal_server_error",
       error: process.env.NODE_ENV === "development" ? error.message : "",
     });
     next(error);
+  }
+};
+
+exports.getUserProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+
+    if (!user) {
+      res.status(404).json({
+        status: "not_found",
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    logger.error(`Profile fetch error: ${error.message}`);
+    res.status(500).json({
+      message: "Server error fetching profile",
+      error: process.env.NODE_ENV === "development" ? error.message : "",
+    });
   }
 };
