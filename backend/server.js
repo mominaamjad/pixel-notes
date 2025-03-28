@@ -14,11 +14,22 @@ process.on("uncaughtException", (error) => {
 
 process.on("unhandledRejection", (reason, promise) => {
   logger.fatal({
-    message: "Unhandled Rejection",
-    reason,
-    promise,
+    message: "Detailed Unhandled Rejection",
+    reason: reason ? reason.toString() : "Unknown reason",
+    stack: reason instanceof Error ? reason.stack : "No stack trace",
+    promiseDetails: {
+      name: promise.constructor.name,
+      toString: promise.toString(),
+    },
   });
-  process.exit(1);
+
+  // Log additional context if possible
+  if (reason) {
+    console.error("Unhandled Rejection Reason:", reason);
+    if (reason.stack) {
+      console.error("Stack Trace:", reason.stack);
+    }
+  }
 });
 
 const startServer = async () => {
