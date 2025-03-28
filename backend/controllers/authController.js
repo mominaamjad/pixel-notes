@@ -70,6 +70,7 @@ exports.login = async (req, res, next) => {
       logger.info(`User logged in: ${user.name}`);
     } else {
       // other wiese show error
+      logger.warn(`Invalid email or password`);
       res.status(401).json({
         status: "unauthorized",
         message: "Invalid email or password",
@@ -125,6 +126,9 @@ exports.forgotPassword = async (req, res, next) => {
     const resetUrl = `${req.protocol}://${req.get(
       "host"
     )}/api/users/resetPassword/${resetToken}`;
+
+    logger.info(`Password reset token generated for ${user.email}`);
+
     const message = `Forgot you password??? Submit a new password on this URL to : ${resetUrl} \n This is only valid for 10 min`;
 
     try {
@@ -139,6 +143,7 @@ exports.forgotPassword = async (req, res, next) => {
         message: "Token sent to mail",
       });
     } catch (error) {
+      logger.error(`Error sending email: ${error.message}`);
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save({ validateBeforeSave: false });
@@ -150,6 +155,7 @@ exports.forgotPassword = async (req, res, next) => {
       });
     }
   } catch (error) {
+    logger.error(`Forgot password error: ${error.message}`);
     res.status(500).json({
       status: "internal_server_error",
       message: "there was an error in reseting the password",
@@ -182,8 +188,11 @@ exports.resetPassword = async (req, res, next) => {
     user.passwordResetExpires = undefined;
     await user.save({ validateModifiedOnly: true });
 
+    logger.info(`Password reset successful for ${user.email}`);
+
     createSendToken(user, 200, res);
   } catch (error) {
+    logger.error(`Password reset error: ${error.message}`);
     res.status(500).json({
       status: "internal_server_error",
       message: "Error resetting password",
@@ -219,10 +228,12 @@ exports.updatePassword = async (req, res, next) => {
     user.password = req.body.newPassword;
     user.confirmPassword = req.body.confirmNewPassword;
     await user.save({ validateModifiedOnly: true });
+    logger.info(`Password changed for user ${user.email}`);
 
     // get new token
     createSendToken(user, 200, res);
   } catch (error) {
+    logger.error(`Change password error: ${error.message}`);
     res.status(500).json({
       status: "internal_server_error",
       message: "Cannot update password",
