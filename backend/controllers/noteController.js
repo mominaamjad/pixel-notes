@@ -40,7 +40,7 @@ exports.getNotes = async (req, res, next) => {
   }
 };
 
-exports.getNote = async (req, res, next) => {
+exports.getNoteById = async (req, res, next) => {
   try {
     const note = await Note.findById(req.params.id);
 
