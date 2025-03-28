@@ -40,7 +40,32 @@ exports.getNotes = async (req, res, next) => {
   }
 };
 
-// exports.getNote
+exports.getNote = async (req, res, next) => {
+  try {
+    const note = await Note.findById(req.params.id);
+
+    if (!note) {
+      logger.error("Note does not exist");
+      res.status(404).json({
+        status: "not_found",
+        message: "Note does not exist",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        note,
+      },
+    });
+  } catch (error) {
+    logger.error(`Error fetching notes: ${error.message}`);
+    res.status(500).json({
+      message: "Failed to fetch notes",
+      error: error.message,
+    });
+  }
+};
 
 exports.createNote = async (req, res, next) => {
   try {
