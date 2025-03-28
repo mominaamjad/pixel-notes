@@ -1,5 +1,6 @@
 const Note = require("../models/notes");
 const { logger } = require("../config/logger");
+const json2csv = require("json2csv");
 
 exports.getNotes = async (req, res, next) => {
   try {
@@ -109,6 +110,7 @@ exports.updateNote = async (req, res, next) => {
         tags: req.body.tags,
         color: req.body.content,
         isFavorite: req.body.isFavorite,
+        isArchived: req.body.isArchived,
       }
     );
 
@@ -163,4 +165,54 @@ exports.deleteNote = async (req, res, next) => {
   }
 };
 
-// exports.toggleFavorite
+exports.exportNotes = async (req, res) => {
+  try {
+    const { format = "json", tags } = req.query;
+
+    // Build query based on optional tag filter
+    const query = { user: req.user._id };
+    if (tags) {
+      query.tags = { $in: tags.split(",") };
+    }
+
+    // Fetch notes
+    const notes = await Note.find(query).lean();
+
+    // Export based on format
+    if (format.toLowerCase() === "csv") {
+      // Convert notes to CSV
+      const fields = [
+        // "_id",
+        "title",
+        "content",
+        "tags",
+        "createdAt",
+        "updatedAt",
+      ];
+      const json2csvParser = new json2csv.Parser({ fields });
+      const csv = json2csvParser.parse(notes);
+
+      // Set headers for CSV download
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader(
+        "Content-Disposition",
+        "attachment; filename=notes-export.csv"
+      );
+      res.status(200).send(csv);
+    } else {
+      // Default to JSON export
+      res.status(200).json({
+        status: "success",
+        length: notes.length,
+        data: { notes },
+      });
+    }
+  } catch (error) {
+    logger.error(`Error exporting notes: ${error.message}`);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to export notes",
+      error: process.env.NODE_ENV === "development" ? error.message : "",
+    });
+  }
+};

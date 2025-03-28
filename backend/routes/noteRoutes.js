@@ -6,10 +6,14 @@ const router = express.Router();
 
 router.use(authMiddleware.protect);
 
-router.route("/").get(noteController.getNotes).post(noteController.createNote);
+router.get("/export", noteController.exportNotes);
+
 router
   .route("/:id")
   .get(noteController.getNoteById)
   .patch(noteController.updateNote)
   .delete(noteController.deleteNote);
+
+router.route("/").get(noteController.getNotes).post(noteController.createNote);
+
 module.exports = router;
