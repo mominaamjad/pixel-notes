@@ -6,5 +6,5 @@ const router = express.Router();
 
 router.use(authMiddleware.protect);
 
-router.route("/").post(noteController.createNote);
+router.route("/").get(noteController.getNotes).post(noteController.createNote);
 module.exports = router;

@@ -1,6 +1,45 @@
 const Note = require("../models/notes");
 const { logger } = require("../config/logger");
 
+exports.getNotes = async (req, res, next) => {
+  try {
+    const { tag, favorite, search } = req.query;
+
+    const query = { user: req.user.id };
+
+    if (tag) {
+      query.tags = { $in: tag.split(",") };
+    }
+
+    if (favorite === "true") {
+      query.isFavorite = true;
+    }
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { content: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const result = await Note.find(query);
+
+    res.status(200).json({
+      status: "success",
+      length: result.length,
+      data: {
+        notes: result,
+      },
+    });
+  } catch (error) {
+    logger.error(`Error fetching notes: ${error.message}`);
+    res.status(500).json({
+      message: "Failed to fetch notes",
+      error: error.message,
+    });
+  }
+};
+
 // exports.getNote
 
 exports.createNote = async (req, res, next) => {
