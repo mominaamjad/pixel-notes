@@ -99,8 +99,41 @@ exports.createNote = async (req, res, next) => {
   // send response
 };
 
-// exports.editNote
+exports.updateNote = async (req, res, next) => {
+  try {
+    const note = await Note.findByIdAndUpdate(
+      { _id: req.params.id, user: req.user.id },
+      {
+        title: req.body.title,
+        content: req.body.content,
+        tags: req.body.tags,
+        color: req.body.content,
+        isFavorite: req.body.isFavorite,
+      }
+    );
 
+    if (!note) {
+      return res.status(404).json({
+        status: "not_found",
+        message: "Note not found",
+      });
+    }
+
+    logger.info(`Note updated: ${note._id}`);
+    res.status(200).json({
+      status: "success",
+      data: {
+        note,
+      },
+    });
+  } catch (error) {
+    logger.error(`Error updating note: ${error.message}`);
+    res.status(400).json({
+      message: "Failed to update note",
+      error: process.env.NODE_ENV === "development" ? error.message : "",
+    });
+  }
+};
 // exports.deleteNote
 
 // exports.toggleFavorite

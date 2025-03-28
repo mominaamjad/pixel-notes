@@ -7,5 +7,8 @@ const router = express.Router();
 router.use(authMiddleware.protect);
 
 router.route("/").get(noteController.getNotes).post(noteController.createNote);
-router.route("/:id").get(noteController.getNoteById);
+router
+  .route("/:id")
+  .get(noteController.getNoteById)
+  .patch(noteController.updateNote);
 module.exports = router;
