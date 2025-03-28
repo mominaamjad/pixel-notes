@@ -134,6 +134,33 @@ exports.updateNote = async (req, res, next) => {
     });
   }
 };
-// exports.deleteNote
+
+exports.deleteNote = async (req, res, next) => {
+  try {
+    const note = await Note.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+
+    if (!note) {
+      return res.status(404).json({
+        status: "not_found",
+        message: "Note not found",
+      });
+    }
+
+    logger.info(`Note deleted: ${req.params.id}`);
+    res.status(204).json({
+      status: "deleted",
+      message: "Note deleted successfully",
+    });
+  } catch (error) {
+    logger.error(`Error updating note: ${error.message}`);
+    res.status(400).json({
+      message: "Failed to update note",
+      error: process.env.NODE_ENV === "development" ? error.message : "",
+    });
+  }
+};
 
 // exports.toggleFavorite
