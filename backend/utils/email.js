@@ -1,4 +1,6 @@
 const nodemailer = require("nodemailer");
+const SENDER_NAME = "Pixel Notes";
+const SENDER_EMAIL = "mominaamjad@pixelnotes.com";
 
 const sendEmail = async (options) => {
   console.log("🔍 EMAIL CONFIG:", {
@@ -14,13 +16,13 @@ const sendEmail = async (options) => {
     requireTLS: true,
     auth: {
       user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD, // ✅ Correct key
+      pass: process.env.EMAIL_PASSWORD,
     },
   });
 
   // define email options
   const mailOptions = {
-    from: "Pixel Notes <mominaamjad@pixelnotes.com>",
+    from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
     to: options.email,
     subject: options.subject,
     text: options.message,
