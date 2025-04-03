@@ -8,11 +8,13 @@ router.use(authMiddleware.protect);
 
 router.get("/export", noteController.exportNotes);
 
+router.get("/download/:id", noteController.downloadNoteById);
+
 router
   .route("/:id")
   .get(noteController.getNoteById)
-  .patch(noteController.updateNote)
-  .delete(noteController.deleteNote);
+  .patch(noteController.updateNoteById)
+  .delete(noteController.deleteNoteById);
 
 router.route("/").get(noteController.getNotes).post(noteController.createNote);
 

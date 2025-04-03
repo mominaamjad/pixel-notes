@@ -6,7 +6,7 @@ exports.getNotes = async (req, res, next) => {
   try {
     const { tag, favorite, search } = req.query;
 
-    const query = { user: req.user.id };
+    const query = { user: req.user._id };
 
     if (tag) {
       query.tags = { $in: tag.split(",") };
@@ -74,14 +74,14 @@ exports.createNote = async (req, res, next) => {
       title: req.body.title || "",
       content: req.body.content,
       color: req.body.color || "#FFFFFF",
-      user: req.user.id,
+      user: req.user._id,
       tags: req.body.tags || [],
       isFavorite: false,
     });
 
     const note = await newNote.save();
 
-    logger.info(`Note created by user ${req.user.id}: ${note._id}`);
+    logger.info(`Note created by user ${req.user._id}: ${note._id}`);
 
     res.status(201).json({
       status: "success",
@@ -100,10 +100,10 @@ exports.createNote = async (req, res, next) => {
   // send response
 };
 
-exports.updateNote = async (req, res, next) => {
+exports.updateNoteById = async (req, res, next) => {
   try {
     const note = await Note.findByIdAndUpdate(
-      { _id: req.params.id, user: req.user.id },
+      { _id: req.params.id, user: req.user._id },
       {
         title: req.body.title,
         content: req.body.content,
@@ -137,11 +137,11 @@ exports.updateNote = async (req, res, next) => {
   }
 };
 
-exports.deleteNote = async (req, res, next) => {
+exports.deleteNoteById = async (req, res, next) => {
   try {
     const note = await Note.findOneAndDelete({
       _id: req.params.id,
-      user: req.user.id,
+      user: req.user._id,
     });
 
     if (!note) {
@@ -212,6 +212,82 @@ exports.exportNotes = async (req, res) => {
     res.status(500).json({
       status: "error",
       message: "Failed to export notes",
+      error: process.env.NODE_ENV === "development" ? error.message : "",
+    });
+  }
+};
+
+exports.downloadNoteById = async (req, res) => {
+  try {
+    const noteId = req.params.id;
+    const { format = "json" } = req.query;
+
+    // Find note by ID and verify ownership
+    const note = await Note.findOne({
+      _id: noteId,
+      user: req.user._id,
+    }).lean();
+
+    if (!note) {
+      return res.status(404).json({
+        status: "not_found",
+        message: "Note not found or access denied",
+      });
+    }
+
+    if (format.toLowerCase() === "csv") {
+      const fields = [
+        "_id",
+        "title",
+        "content",
+        "color",
+        "isFavorite",
+        "isArchived",
+        "createdAt",
+        "updatedAt",
+      ];
+
+      const csvData = {
+        ...note,
+        _id: note._id.toString(),
+        tags: Array.isArray(note.tags) ? note.tags.join(", ") : "",
+      };
+
+      const json2csvParser = new json2csv.Parser({ fields });
+      const csv = json2csvParser.parse([csvData]);
+
+      // headers for CSV download
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=note-${noteId}.csv`
+      );
+      return res.status(200).send(csv);
+    } else if (format.toLowerCase() === "txt") {
+      const content = `Title: ${note.title || "Untitled"}\n\n${note.content}`;
+
+      // headers for text download
+      res.setHeader("Content-Type", "text/plain");
+      const fileName = (note.title || "note")
+        .replace(/\s+/g, "_")
+        .replace(/[^\w.-]/g, "");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${fileName}-${noteId}.txt`
+      );
+      return res.status(200).send(content);
+    } else {
+      // Default to JSON
+      return res.status(200).json({
+        status: "success",
+        data: { note },
+      });
+    }
+  } catch (error) {
+    logger.error(`Error downloading note: ${error.message}`);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to download note",
       error: process.env.NODE_ENV === "development" ? error.message : "",
     });
   }
