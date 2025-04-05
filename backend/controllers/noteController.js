@@ -4,6 +4,23 @@ const AppError = require("../utils/AppError");
 const catchAsync = require("../utils/catchAsync");
 const Note = require("../models/notes");
 
+const validateFormat = (format) => {
+  format = format.toLowerCase();
+  const validFormats = ["json", "csv", "txt"];
+
+  if (!validFormats.includes(format)) {
+    logger.error(`Invalid format requested: ${format}`);
+    return next(
+      new AppError(
+        `Invalid format '${format}'. Supported formats are: ${validFormats.join(
+          ", "
+        )}`,
+        400
+      )
+    );
+  }
+};
+
 exports.getNotes = catchAsync(async (req, res, next) => {
   const { tag, favorite, search } = req.query;
 
@@ -141,7 +158,10 @@ exports.deleteNoteById = catchAsync(async (req, res, next) => {
 exports.exportNotes = catchAsync(async (req, res, next) => {
   const { format = "json", tags } = req.query;
 
+  validateFormat(format);
+
   const query = { user: req.user._id };
+
   if (tags) {
     query.tags = { $in: tags.split(",") };
   }
@@ -169,6 +189,26 @@ exports.exportNotes = catchAsync(async (req, res, next) => {
       logger.error(`CSV conversion error: ${err.message}`);
       return next(new AppError("Error converting notes to CSV format", 500));
     }
+  } else if (format.toLowerCase() === "txt") {
+    const fileContent = notes
+      .map((note) => {
+        const title = note.title || "Untitled Note";
+        const content = note.content || "No content available.";
+        const tags =
+          note.tags && note.tags.length > 0
+            ? `Tags: ${note.tags.join(", ")}`
+            : "No tags.";
+
+        return `Title: ${title}\nContent:\n${content}\n${tags}\n\n---\n`;
+      })
+      .join("\n");
+
+    res.setHeader("Content-Type", "text/plain");
+
+    const fileName = `notes-export-${new Date().toISOString()}.txt`;
+    res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
+
+    return res.status(200).send(fileContent);
   } else {
     res.status(200).json({
       status: "success",
@@ -181,6 +221,8 @@ exports.exportNotes = catchAsync(async (req, res, next) => {
 exports.downloadNoteById = catchAsync(async (req, res, next) => {
   const noteId = req.params.id;
   const { format = "json" } = req.query;
+
+  validateFormat(format);
 
   const note = await Note.findOne({
     _id: noteId,
