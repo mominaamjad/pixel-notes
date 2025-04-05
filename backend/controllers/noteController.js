@@ -1,241 +1,198 @@
-const Note = require("../models/notes");
-const { logger } = require("../config/logger");
 const json2csv = require("json2csv");
+const { logger } = require("../config/logger");
+const AppError = require("../utils/AppError");
+const catchAsync = require("../utils/catchAsync");
+const Note = require("../models/notes");
 
-exports.getNotes = async (req, res, next) => {
-  try {
-    const { tag, favorite, search } = req.query;
+exports.getNotes = catchAsync(async (req, res, next) => {
+  const { tag, favorite, search } = req.query;
 
-    const query = { user: req.user._id };
+  const query = { user: req.user._id };
 
-    if (tag) {
-      query.tags = { $in: tag.split(",") };
-    }
-
-    if (favorite === "true") {
-      query.isFavorite = true;
-    }
-
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { content: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    const result = await Note.find(query);
-
-    res.status(200).json({
-      status: "success",
-      length: result.length,
-      data: {
-        notes: result,
-      },
-    });
-  } catch (error) {
-    logger.error(`Error fetching notes: ${error.message}`);
-    res.status(500).json({
-      message: "Failed to fetch notes",
-      error: error.message,
-    });
+  if (tag) {
+    query.tags = { $in: tag.split(",") };
   }
-};
 
-exports.getNoteById = async (req, res, next) => {
-  try {
-    const note = await Note.findById(req.params.id);
-
-    if (!note) {
-      logger.error("Note does not exist");
-      res.status(404).json({
-        status: "not_found",
-        message: "Note does not exist",
-      });
-    }
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        note,
-      },
-    });
-  } catch (error) {
-    logger.error(`Error fetching notes: ${error.message}`);
-    res.status(500).json({
-      message: "Failed to fetch notes",
-      error: error.message,
-    });
+  if (favorite === "true") {
+    query.isFavorite = true;
   }
-};
 
-exports.createNote = async (req, res, next) => {
-  try {
-    const newNote = new Note({
-      title: req.body.title || "",
+  if (search) {
+    query.$or = [
+      { title: { $regex: search, $options: "i" } },
+      { content: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  const result = await Note.find(query);
+
+  if (!result || result.length === 0) {
+    logger.error(`No notes found for user ${req.user._id}`);
+    return next(new AppError("No notes found!", 404));
+  }
+
+  logger.info(
+    `Number of notes found for user "${req.user._id}": ${result.length}`
+  );
+
+  res.status(200).json({
+    status: "success",
+    length: result.length,
+    data: {
+      notes: result,
+    },
+  });
+});
+
+exports.getNoteById = catchAsync(async (req, res, next) => {
+  const note = await Note.findOne({
+    _id: req.params.id,
+    user: req.user._id,
+  });
+
+  if (!note) {
+    logger.error("Note does not exist");
+    return next(new AppError("Note does not exist", 404));
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      note,
+    },
+  });
+});
+
+exports.createNote = catchAsync(async (req, res, next) => {
+  const newNote = new Note({
+    title: req.body.title || "",
+    content: req.body.content,
+    color: req.body.color || "#FFFFFF",
+    user: req.user._id,
+    tags: req.body.tags || [],
+    isFavorite: false,
+  });
+
+  const note = await newNote.save();
+
+  if (!note) {
+    logger.error(`Failed to create note`);
+    return next(new AppError("Error creating new note", 500));
+  }
+
+  logger.info(`Note created by user ${req.user._id}: ${note._id}`);
+
+  res.status(201).json({
+    status: "success",
+    data: {
+      note,
+    },
+  });
+});
+
+exports.updateNoteById = catchAsync(async (req, res, next) => {
+  const note = await Note.findOneAndUpdate(
+    { _id: req.params.id, user: req.user._id },
+    {
+      title: req.body.title,
       content: req.body.content,
-      color: req.body.color || "#FFFFFF",
-      user: req.user._id,
-      tags: req.body.tags || [],
-      isFavorite: false,
-    });
+      tags: req.body.tags,
+      color: req.body.color,
+      isFavorite: req.body.isFavorite,
+      isArchived: req.body.isArchived,
+    },
+    { new: true }
+  );
 
-    const note = await newNote.save();
-
-    logger.info(`Note created by user ${req.user._id}: ${note._id}`);
-
-    res.status(201).json({
-      status: "success",
-      data: {
-        note,
-      },
-    });
-  } catch (error) {
-    logger.error(`Error creating note: ${error.message}`);
-    res.status(400).json({
-      message: "Failed to create note",
-      error: error.message,
-    });
+  if (!note) {
+    logger.error(`Note not found or unauthorized access: ${req.params.id}`);
+    return next(new AppError(`No note found for id ${req.params.id}`, 404));
   }
-  // save note
-  // send response
-};
 
-exports.updateNoteById = async (req, res, next) => {
-  try {
-    const note = await Note.findByIdAndUpdate(
-      { _id: req.params.id, user: req.user._id },
-      {
-        title: req.body.title,
-        content: req.body.content,
-        tags: req.body.tags,
-        color: req.body.content,
-        isFavorite: req.body.isFavorite,
-        isArchived: req.body.isArchived,
-      }
+  logger.info(`Note updated: ${note._id}`);
+  res.status(200).json({
+    status: "success",
+    data: {
+      note,
+    },
+  });
+});
+
+exports.deleteNoteById = catchAsync(async (req, res, next) => {
+  const note = await Note.findOneAndDelete({
+    _id: req.params.id,
+    user: req.user._id,
+  });
+
+  if (!note) {
+    logger.error(
+      `Failed to delete note: ${req.params.id} - not found or unauthorized`
     );
-
-    if (!note) {
-      return res.status(404).json({
-        status: "not_found",
-        message: "Note not found",
-      });
-    }
-
-    logger.info(`Note updated: ${note._id}`);
-    res.status(200).json({
-      status: "success",
-      data: {
-        note,
-      },
-    });
-  } catch (error) {
-    logger.error(`Error updating note: ${error.message}`);
-    res.status(400).json({
-      message: "Failed to update note",
-      error: process.env.NODE_ENV === "development" ? error.message : "",
-    });
+    return next(new AppError(`No note found for id ${req.params.id}`, 404));
   }
-};
 
-exports.deleteNoteById = async (req, res, next) => {
-  try {
-    const note = await Note.findOneAndDelete({
-      _id: req.params.id,
-      user: req.user._id,
-    });
+  logger.info(`Note deleted: ${req.params.id}`);
+  res.status(204).json({
+    status: "deleted",
+    message: "Note deleted successfully",
+  });
+});
 
-    if (!note) {
-      return res.status(404).json({
-        status: "not_found",
-        message: "Note not found",
-      });
-    }
+exports.exportNotes = catchAsync(async (req, res, next) => {
+  const { format = "json", tags } = req.query;
 
-    logger.info(`Note deleted: ${req.params.id}`);
-    res.status(204).json({
-      status: "deleted",
-      message: "Note deleted successfully",
-    });
-  } catch (error) {
-    logger.error(`Error updating note: ${error.message}`);
-    res.status(400).json({
-      message: "Failed to update note",
-      error: process.env.NODE_ENV === "development" ? error.message : "",
-    });
+  const query = { user: req.user._id };
+  if (tags) {
+    query.tags = { $in: tags.split(",") };
   }
-};
 
-exports.exportNotes = async (req, res) => {
-  try {
-    const { format = "json", tags } = req.query;
+  const notes = await Note.find(query).lean();
 
-    // Build query based on optional tag filter
-    const query = { user: req.user._id };
-    if (tags) {
-      query.tags = { $in: tags.split(",") };
-    }
+  if (!notes || notes.length === 0) {
+    logger.error(`No notes found to export for user ${req.user._id}`);
+    return next(new AppError(`No notes found to export`, 404));
+  }
 
-    // Fetch notes
-    const notes = await Note.find(query).lean();
-
-    // Export based on format
-    if (format.toLowerCase() === "csv") {
-      // Convert notes to CSV
-      const fields = [
-        // "_id",
-        "title",
-        "content",
-        "tags",
-        "createdAt",
-        "updatedAt",
-      ];
+  if (format.toLowerCase() === "csv") {
+    try {
+      const fields = ["title", "content", "tags", "createdAt", "updatedAt"];
       const json2csvParser = new json2csv.Parser({ fields });
       const csv = json2csvParser.parse(notes);
 
-      // Set headers for CSV download
       res.setHeader("Content-Type", "text/csv");
       res.setHeader(
         "Content-Disposition",
         "attachment; filename=notes-export.csv"
       );
       res.status(200).send(csv);
-    } else {
-      // Default to JSON export
-      res.status(200).json({
-        status: "success",
-        length: notes.length,
-        data: { notes },
-      });
+    } catch (error) {
+      logger.error(`CSV conversion error: ${err.message}`);
+      return next(new AppError("Error converting notes to CSV format", 500));
     }
-  } catch (error) {
-    logger.error(`Error exporting notes: ${error.message}`);
-    res.status(500).json({
-      status: "error",
-      message: "Failed to export notes",
-      error: process.env.NODE_ENV === "development" ? error.message : "",
+  } else {
+    res.status(200).json({
+      status: "success",
+      length: notes.length,
+      data: { notes },
     });
   }
-};
+});
 
-exports.downloadNoteById = async (req, res) => {
-  try {
-    const noteId = req.params.id;
-    const { format = "json" } = req.query;
+exports.downloadNoteById = catchAsync(async (req, res, next) => {
+  const noteId = req.params.id;
+  const { format = "json" } = req.query;
 
-    // Find note by ID and verify ownership
-    const note = await Note.findOne({
-      _id: noteId,
-      user: req.user._id,
-    }).lean();
+  const note = await Note.findOne({
+    _id: noteId,
+    user: req.user._id,
+  }).lean();
 
-    if (!note) {
-      return res.status(404).json({
-        status: "not_found",
-        message: "Note not found or access denied",
-      });
-    }
+  if (!note) {
+    return next(new AppError(`No note found for id ${noteId}`, 404));
+  }
 
-    if (format.toLowerCase() === "csv") {
+  if (format.toLowerCase() === "csv") {
+    try {
       const fields = [
         "_id",
         "title",
@@ -263,32 +220,28 @@ exports.downloadNoteById = async (req, res) => {
         `attachment; filename=note-${noteId}.csv`
       );
       return res.status(200).send(csv);
-    } else if (format.toLowerCase() === "txt") {
-      const content = `Title: ${note.title || "Untitled"}\n\n${note.content}`;
-
-      // headers for text download
-      res.setHeader("Content-Type", "text/plain");
-      const fileName = (note.title || "note")
-        .replace(/\s+/g, "_")
-        .replace(/[^\w.-]/g, "");
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename=${fileName}-${noteId}.txt`
-      );
-      return res.status(200).send(content);
-    } else {
-      // Default to JSON
-      return res.status(200).json({
-        status: "success",
-        data: { note },
-      });
+    } catch (error) {
+      logger.error(`CSV conversion error for note ${noteId}: ${err.message}`);
+      return next(new AppError("Error converting note to CSV format", 500));
     }
-  } catch (error) {
-    logger.error(`Error downloading note: ${error.message}`);
-    res.status(500).json({
-      status: "error",
-      message: "Failed to download note",
-      error: process.env.NODE_ENV === "development" ? error.message : "",
+  } else if (format.toLowerCase() === "txt") {
+    const content = `Title: ${note.title || "Untitled"}\n\n${note.content}`;
+
+    res.setHeader("Content-Type", "text/plain");
+
+    const fileName = (note.title || "note")
+      .replace(/\s+/g, "_")
+      .replace(/[^\w.-]/g, "");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${fileName}-${noteId}.txt`
+    );
+    return res.status(200).send(content);
+  } else {
+    // default to JSON
+    return res.status(200).json({
+      status: "success",
+      data: { note },
     });
   }
-};
+});
