@@ -3,6 +3,9 @@ const cors = require("cors");
 const { httpLogger, logger } = require("./config/logger.js");
 const userRoutes = require("./routes/userRoutes");
 
+const AppError = require("./utils/AppError");
+const globalErrorHandler = require("./controllers/errorController");
+
 const app = express();
 
 // HTTP request logging middleware
@@ -15,20 +18,15 @@ app.use(express.json());
 // mounting of routes
 app.use("/api/users", userRoutes);
 
-// global error handler
-app.use((err, req, res, next) => {
+app.all("*", (req, res, next) => {
   logger.error({
     message: err.message,
     stack: err.stack,
   });
-
-  res.status(500).json({
-    status: "error",
-    message:
-      process.env.NODE_ENV === "production"
-        ? "An unexpected error occurred"
-        : err.message,
-  });
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
+
+// Global error handler
+app.use(globalErrorHandler);
 
 module.exports = app;
