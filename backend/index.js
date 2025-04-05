@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { httpLogger, logger } = require("./config/logger.js");
+const { httpLogger } = require("./config/logger.js");
 const userRoutes = require("./routes/userRoutes");
 
 const AppError = require("./utils/AppError");
@@ -19,11 +19,9 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 
 app.all("*", (req, res, next) => {
-  logger.error({
-    message: err.message,
-    stack: err.stack,
-  });
-  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+  return next(
+    new AppError(`Can't find ${req.originalUrl} on this server!`, 404)
+  );
 });
 
 // Global error handler
