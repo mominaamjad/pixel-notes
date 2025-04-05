@@ -1,43 +1,41 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/users");
 const { logger } = require("../config/logger");
+const { promisify } = require("util");
+const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/AppError");
+const User = require("../models/users");
 
 // to check ke user logged in hai? agar hai toh user obj request ke saath agay bhej do
-exports.protect = async (req, res, next) => {
+exports.protect = catchAsync(async (req, res, next) => {
   let token;
 
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
-    try {
-      token = req.headers.authorization.split(" ")[1];
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      req.user = await User.findById(decoded.id).select("-password");
-
-      if (!req.user) {
-        res.status(404).json({
-          status: "not_found",
-          message: "User not found",
-        });
-      }
-      next();
-    } catch (error) {
-      logger.error(`Authorization error: ${error.message}`);
-      res.status(401).json({
-        status: "unauthorized",
-        message: "Not authorized",
-        error: error.message,
-      });
-    }
-
-    if (!token) {
-      res.status(401).json({
-        status: "unauthorized",
-        message: "Please login to continue",
-      });
-    }
+    token = req.headers.authorization.split(" ")[1];
   }
-};
+
+  if (!token) {
+    logger.warn("User not logged in");
+    return next(
+      new AppError("You are not logged in! Please log in to get access.", 401)
+    );
+  }
+
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+  const currentUser = await User.findById(decoded.id);
+
+  if (!currentUser) {
+    return next(
+      new AppError(
+        "The user belonging to this token does no longer exist.",
+        401
+      )
+    );
+  }
+
+  req.user = currentUser;
+  next();
+});

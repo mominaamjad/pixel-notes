@@ -1,10 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const { httpLogger } = require("./config/logger.js");
-const userRoutes = require("./routes/userRoutes");
-
 const AppError = require("./utils/AppError");
 const globalErrorHandler = require("./controllers/errorController");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
