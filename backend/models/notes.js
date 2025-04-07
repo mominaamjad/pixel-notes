@@ -25,6 +25,14 @@ const NoteSchema = new mongoose.Schema(
         trim: true,
       },
     ],
+    isFavorite: {
+      type: Boolean,
+      default: false,
+    },
+    isArchived: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
