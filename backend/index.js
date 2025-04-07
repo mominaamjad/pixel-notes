@@ -1,9 +1,9 @@
 const express = require("express");
-const { httpLogger, logger } = require("./config/logger.js");
 const cors = require("cors");
-
+const { httpLogger } = require("./config/logger.js");
 const AppError = require("./utils/AppError");
 const globalErrorHandler = require("./controllers/errorController");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
@@ -14,12 +14,13 @@ app.use(httpLogger);
 app.use(cors());
 app.use(express.json());
 
+// mounting of routes
+app.use("/api/users", userRoutes);
+
 app.all("*", (req, res, next) => {
-  logger.error({
-    message: err.message,
-    stack: err.stack,
-  });
-  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+  return next(
+    new AppError(`Can't find ${req.originalUrl} on this server!`, 404)
+  );
 });
 
 // Global error handler

@@ -15,12 +15,13 @@ const logger = pino({
 
 const httpLogger = pinoHttp({
   logger,
-  customLogLevel: (res, err) => {
-    if (res.statusCode >= 400 && res.statusCode < 500) {
-      return "warn";
-    } else if (res.statusCode >= 500 || err) {
-      return "error";
-    }
+  customLogLevel: (req, res, err) => {
+    const statusCode = res.statusCode; // ✅ Get actual status code
+    console.log(`🔥 Checking status: ${statusCode}`);
+
+    if (statusCode === 401) return "warn";
+    if (statusCode >= 400 && statusCode < 500) return "warn";
+    if (statusCode >= 500 || err) return "error";
     return "info";
   },
   customSuccessMessage: (req, res) => {
