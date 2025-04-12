@@ -37,5 +37,16 @@ const authService = {
       handleError(err);
     }
   },
+
+  async forgotPassword({ email }) {
+    try {
+      const response = await axios.post(`${API_URL}/users/forgotPassword`, {
+        email,
+      });
+      return handleResponse(response);
+    } catch (err) {
+      handleError(err);
+    }
+  },
 };
 export default authService;

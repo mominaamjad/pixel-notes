@@ -145,6 +145,11 @@ const LoginForm = () => {
                   {formErrors.password}
                 </p>
               )}
+              <Link to="/forgot-password">
+                <p className="text-right font-jersey text-custom-brown hover:underline hover:text-custom-light-pink">
+                  forgot password
+                </p>
+              </Link>
             </div>
 
             <Button
