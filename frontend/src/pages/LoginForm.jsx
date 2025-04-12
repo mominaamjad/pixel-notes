@@ -1,11 +1,11 @@
 import { React, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
-import useAuth from "../hooks/useAuth";
-import Input from "./Input";
-import Button from "./Button";
-import CustomLink from "./CustomLink";
 import toast from "react-hot-toast";
+import useAuth from "../hooks/useAuth";
+import Input from "../components/Input";
+import Button from "../components/Button";
+import CustomLink from "../components/CustomLink";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({

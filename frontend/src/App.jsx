@@ -2,8 +2,8 @@ import "./App.css";
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import LoginForm from "./components/LoginForm";
-import SignupForm from "./components/SignupForm";
+import LoginForm from "./pages/LoginForm";
+import SignupForm from "./pages/SignupForm";
 
 function App() {
   return (

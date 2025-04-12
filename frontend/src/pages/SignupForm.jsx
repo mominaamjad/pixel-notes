@@ -1,11 +1,11 @@
 import { React, useState } from "react";
-import useAuth from "../hooks/useAuth";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
-import Input from "./Input";
-import Button from "./Button";
-import CustomLink from "./CustomLink";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import useAuth from "../hooks/useAuth";
+import Input from "../components/Input";
+import Button from "../components/Button";
+import CustomLink from "../components/CustomLink";
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
