@@ -25,11 +25,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const signup = async (data) => {
+    try {
+      setError(null);
+      setLoading(true);
+      const { user, token } = await authService.signup(data);
+      localStorage.setItem("token", token);
+      setUser(user);
+      return true;
+    } catch (err) {
+      setError(err.message || "Signup failed.");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     user,
     loading,
     error,
     login,
+    signup,
     setError,
   };
 
