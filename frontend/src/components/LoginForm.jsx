@@ -5,6 +5,7 @@ import useAuth from "../hooks/useAuth";
 import Input from "./Input";
 import Button from "./Button";
 import CustomLink from "./CustomLink";
+import toast from "react-hot-toast";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -50,7 +51,10 @@ const LoginForm = () => {
     e.preventDefault();
     if (validateForm()) {
       const success = await login(formData);
-      if (success) navigate("/dashboard");
+      if (success) {
+        toast.success("Logged in successfully!");
+        setTimeout(() => navigate("/dashboard"), 1500);
+      }
     }
   };
 
@@ -71,15 +75,11 @@ const LoginForm = () => {
             alt="Pixel Notes Logo"
             className="h-20 mx-auto"
           />
-          <h2 className="font-mono text-2xl text-custom-dark-pink text-center mb-4">
+          <h2 className="font-pixel text-2xl text-custom-dark-pink text-center mb-4">
             LOGIN
           </h2>
 
-          {error && (
-            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 font-jersey">
-              <p>{error}</p>
-            </div>
-          )}
+          {error && toast.error(error)}
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="mb-4">

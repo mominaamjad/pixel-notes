@@ -5,6 +5,7 @@ import Input from "./Input";
 import Button from "./Button";
 import CustomLink from "./CustomLink";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
@@ -69,7 +70,10 @@ const SignupForm = () => {
     e.preventDefault();
     if (validateForm()) {
       const success = await signup(formData);
-      if (success) navigate("/dashboard");
+      if (success) {
+        toast.success("Created account successfully!");
+        setTimeout(() => navigate("/dashboard"), 1500);
+      }
     }
   };
 
@@ -90,7 +94,7 @@ const SignupForm = () => {
               alt="Pixel Notes Logo"
               className="h-20 mr-3"
             />
-            <h2 className="font-mono text-2xl text-custom-dark-pink text-center">
+            <h2 className="font-pixel text-2xl text-custom-dark-pink text-center">
               PIXEL NOTES
             </h2>
           </div>
@@ -98,11 +102,7 @@ const SignupForm = () => {
             Create an account
           </p>
 
-          {error && (
-            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 font-jersey">
-              <p>{error}</p>
-            </div>
-          )}
+          {error && toast.error(error)}
 
           <form onSubmit={handleSubmit} noValidate>
             <Input

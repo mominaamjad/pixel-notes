@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        mono: ["Press Start 2P", "monospace"],
+        pixel: ['"Press Start 2P"', "monospace"],
         tiny: ['"Tiny5"', "sans-serif"],
         jersey: ['"Jersey 15"', "sans-serif"],
       },
