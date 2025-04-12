@@ -1,10 +1,6 @@
 import axios from "axios";
 import API_URL from "./constants";
 
-const handleResponse = async (response) => {
-  return response.data;
-};
-
 const handleError = (err) => {
   const message =
     err.response?.data?.message || "Something went wrong. Please try again.";
@@ -18,7 +14,7 @@ const authService = {
         email,
         password,
       });
-      return handleResponse(response);
+      return response.data;
     } catch (err) {
       handleError(err);
     }
@@ -32,7 +28,7 @@ const authService = {
         password,
         confirmPassword,
       });
-      return handleResponse(response);
+      return response.data;
     } catch (err) {
       handleError(err);
     }
@@ -43,7 +39,19 @@ const authService = {
       const response = await axios.post(`${API_URL}/users/forgotPassword`, {
         email,
       });
-      return handleResponse(response);
+      return response.data;
+    } catch (err) {
+      handleError(err);
+    }
+  },
+
+  async resetPassword({ password, confirmPassword, token }) {
+    try {
+      const response = await axios.post(
+        `${API_URL}/users/resetPassword/${token}`,
+        { password, confirmPassword }
+      );
+      return response.data;
     } catch (err) {
       handleError(err);
     }
