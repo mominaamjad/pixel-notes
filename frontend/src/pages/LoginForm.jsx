@@ -1,5 +1,5 @@
-import { React, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { React, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import useAuth from "../hooks/useAuth";
@@ -16,6 +16,10 @@ const LoginForm = () => {
   const [formErrors, setFormErrors] = useState({});
   const { login, loading, error } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (error) toast.error(error);
+  }, [error]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,6 +59,10 @@ const LoginForm = () => {
         toast.success("Logged in successfully!");
         setTimeout(() => navigate("/dashboard"), 1500);
       }
+      setFormData({
+        email: "",
+        password: "",
+      });
     }
   };
 
@@ -78,8 +86,6 @@ const LoginForm = () => {
           <h2 className="font-pixel text-2xl text-custom-dark-pink text-center mb-4">
             LOGIN
           </h2>
-
-          {error && toast.error(error)}
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="mb-4">
