@@ -12,7 +12,7 @@ const Input = ({
   autoComplete = "off",
 }) => {
   return (
-    <div className="mb-4 w-full flex items-">
+    <div className="mb-2 w-full flex items-">
       <input
         type={type}
         id={id}
