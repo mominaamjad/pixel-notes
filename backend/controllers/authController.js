@@ -94,9 +94,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetUrl = `${req.protocol}://${req.get(
-    "host"
-  )}/api/users/resetPassword/${resetToken}`;
+  const resetUrl = `http://localhost:5173/reset-password?token=${resetToken}`;
+
   const message = `Forgot you password??? Submit a new password on this URL to : ${resetUrl} \n This is only valid for 10 min`;
 
   logger.info(`Password reset token generated for ${user.email}`);
