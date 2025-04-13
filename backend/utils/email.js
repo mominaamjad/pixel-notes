@@ -1,6 +1,5 @@
 const nodemailer = require("nodemailer");
-const SENDER_NAME = "Pixel Notes";
-const SENDER_EMAIL = "mominaamjad@pixelnotes.com";
+const { SENDER_NAME, SENDER_EMAIL } = require("../constants");
 
 const sendEmail = async (options) => {
   console.log("🔍 EMAIL CONFIG:", {
