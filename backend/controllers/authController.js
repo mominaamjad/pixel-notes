@@ -5,6 +5,7 @@ const sendEmail = require("../utils/email");
 const AppError = require("../utils/AppError");
 const catchAsync = require("../utils/catchAsync");
 const User = require("../models/users");
+const { FRONTEND_URL } = require("../constants");
 
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
@@ -94,9 +95,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetUrl = `${req.protocol}://${req.get(
-    "host"
-  )}/api/users/resetPassword/${resetToken}`;
+  const resetUrl = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
+
   const message = `Forgot you password??? Submit a new password on this URL to : ${resetUrl} \n This is only valid for 10 min`;
 
   logger.info(`Password reset token generated for ${user.email}`);
