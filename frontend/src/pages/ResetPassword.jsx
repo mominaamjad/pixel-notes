@@ -14,6 +14,7 @@ const ResetPassword = () => {
   const [formErrors, setFormErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -54,21 +55,37 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      const token = new URLSearchParams(window.location.search).get("token");
+    console.log("submit clicked");
 
+    if (!validateForm()) return;
+
+    const token = new URLSearchParams(window.location.search).get("token");
+    if (!token) {
+      toast.error("Invalid or missing token.");
+      return;
+    }
+
+    try {
+      setLoading(true);
       const response = await authService.resetPassword({
         password: formData.password,
         confirmPassword: formData.confirmPassword,
         token,
       });
 
-      if (response.status === "success") {
+      console.log("Reset response:", response);
+
+      if (response?.status === "success") {
         toast.success("Password reset successful!");
         navigate("/login");
       } else {
-        toast.error("Failed to reset password.");
+        toast.error(response?.message || "Failed to reset password.");
       }
+    } catch (err) {
+      console.error("Error during password reset:", err);
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,11 +107,11 @@ const ResetPassword = () => {
           <h2 className="font-pixel text-lg text-custom-dark-pink text-center mb-4">
             RESET PASSWORD
           </h2>
-          <p className="font-jersey text-custom-brown mb-2">
+          <p className="font-jersey text-center text-custom-brown mb-2">
             Enter your new password
           </p>
 
-          <form onSubmit={handleSubmit} noValidate>
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
@@ -107,7 +124,7 @@ const ResetPassword = () => {
               />
               <button
                 type="button"
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 focus:outline-none active:outline-none"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 focus:outline-none active:outline-none"
                 onClick={togglePasswordVisibility}
               >
                 {showPassword ? (
@@ -134,7 +151,7 @@ const ResetPassword = () => {
               />
               <button
                 type="button"
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 focus:outline-none active:outline-none"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 focus:outline-none active:outline-none"
                 onClick={toggleConfirmVisibility}
               >
                 {showConfirm ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
@@ -151,7 +168,7 @@ const ResetPassword = () => {
               className=" bg-custom-dark-pink text-white py-2 px-4 border-2 border-black hover:bg-custom-light-pink transition-colors relative"
               fullWidth={true}
             >
-              Reset
+              {loading ? "Reseting..." : "Reset"}
             </Button>
           </form>
         </div>
