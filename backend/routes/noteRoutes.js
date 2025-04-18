@@ -12,7 +12,8 @@ router.get("/download/:id", noteController.downloadNoteById);
 
 router.get("/tags", noteController.getAllTagsForUser);
 
-router.patch("/:id/favorite", protect, noteController.toggleFavorite);
+router.patch("/:id/favorite", noteController.toggleFavorite);
+router.patch("/:id/archive", noteController.toggleArchive);
 
 router
   .route("/:id")

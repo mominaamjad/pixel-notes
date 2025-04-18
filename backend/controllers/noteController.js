@@ -49,7 +49,7 @@ exports.createNote = catchAsync(async (req, res, next) => {
 });
 
 exports.getNotes = catchAsync(async (req, res, next) => {
-  const { tag, favorite, color } = req.query;
+  const { tag, favorite, color, archived } = req.query;
 
   const query = { user: req.user._id };
 
@@ -63,6 +63,12 @@ exports.getNotes = catchAsync(async (req, res, next) => {
 
   if (color) {
     query.color = color;
+  }
+
+  if (archived === "true") {
+    query.isArchived = true;
+  } else {
+    query.isArchived = false;
   }
 
   const result = await Note.find(query);
@@ -112,8 +118,6 @@ exports.updateNoteById = catchAsync(async (req, res, next) => {
       content: req.body.content,
       tags: req.body.tags,
       color: req.body.color,
-      isFavorite: req.body.isFavorite,
-      isArchived: req.body.isArchived,
     },
     { new: true }
   );
@@ -317,6 +321,24 @@ exports.toggleFavorite = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     message: `Note marked as ${note.isFavorite ? "favorite" : "not favorite"}`,
+    data: {
+      note,
+    },
+  });
+});
+
+exports.toggleArchive = catchAsync(async (req, res, next) => {
+  const note = await Note.findOne({ _id: req.params.id, user: req.user._id });
+
+  if (!note) {
+    return next(new AppError("Note not found", 404));
+  }
+
+  note.isArchived = !note.isArchived;
+  await note.save();
+
+  res.status(200).json({
+    status: "success",
     data: {
       note,
     },
