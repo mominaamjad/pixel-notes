@@ -284,3 +284,22 @@ exports.exportNotes = catchAsync(async (req, res, next) => {
     });
   }
 });
+
+exports.getAllTagsForUser = catchAsync(async (req, res, next) => {
+  const notes = await Note.find({ user: req.user._id }, "tags");
+
+  const tagsSet = new Set();
+  notes.forEach((note) => {
+    note.tags?.forEach((tag) => tagsSet.add(tag));
+  });
+
+  const tags = Array.from(tagsSet);
+
+  res.status(200).json({
+    status: "success",
+    length: tags.length,
+    data: {
+      tags,
+    },
+  });
+});

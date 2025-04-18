@@ -10,6 +10,8 @@ router.get("/export", noteController.exportNotes);
 
 router.get("/download/:id", noteController.downloadNoteById);
 
+router.get("/tags", noteController.getAllTagsForUser);
+
 router
   .route("/:id")
   .get(noteController.getNoteById)
