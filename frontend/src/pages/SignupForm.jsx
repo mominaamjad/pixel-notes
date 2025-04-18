@@ -98,13 +98,13 @@ const SignupForm = () => {
               PIXEL NOTES
             </h2>
           </div>
-          <p className="text-lg font-jersey mb-3 text-custom-brown">
+          <p className="text-lg text-center font-jersey mb-3 text-custom-brown">
             Create an account
           </p>
 
           {error && toast.error(error)}
 
-          <form onSubmit={handleSubmit} noValidate>
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <Input
               type="text"
               id="name"
@@ -147,7 +147,7 @@ const SignupForm = () => {
               />
               <button
                 type="button"
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 focus:outline-none active:outline-none"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 focus:outline-none active:outline-none"
                 onClick={togglePasswordVisibility}
               >
                 {showPassword ? (
@@ -174,7 +174,7 @@ const SignupForm = () => {
               />
               <button
                 type="button"
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 focus:outline-none active:outline-none"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 focus:outline-none active:outline-none"
                 onClick={toggleConfirmVisibility}
               >
                 {showConfirm ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}

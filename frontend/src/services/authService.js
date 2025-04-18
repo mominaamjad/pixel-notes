@@ -47,7 +47,7 @@ const authService = {
 
   async resetPassword({ password, confirmPassword, token }) {
     try {
-      const response = await axios.post(
+      const response = await axios.patch(
         `${API_URL}/users/resetPassword/${token}`,
         { password, confirmPassword }
       );
