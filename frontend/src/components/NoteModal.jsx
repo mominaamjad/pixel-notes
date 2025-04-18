@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import DOMPurify from "dompurify";
 import noteService from "../services/noteService";
 import Button from "./Button";
 
@@ -33,10 +34,13 @@ const NoteModal = ({ noteId, onClose }) => {
           {note.title || "Untitled"}
         </h2>
 
-        <div className="text-gray-800 whitespace-pre-line break-words font-mono text-sm leading-relaxed px-1">
-          {note.content || "No content available."}
+        <div className="text-gray-800 whitespace-normal break-words font-mono text-sm leading-relaxed px-1 editor-content">
+          <div
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(note.content),
+            }}
+          ></div>
         </div>
-
         {note.tags?.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
             {note.tags.map((tag, idx) => (

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
+import DOMPurify from "dompurify";
 import { Pencil, Star, Trash2 } from "lucide-react";
 import ConfirmationModal from "./ConfirmationModal";
 
@@ -33,9 +34,10 @@ const NoteCard = ({ note, onClick = () => {}, onDelete }) => {
           </h2>
         </div>
 
-        <p className="text-gray-600 font-mono mb-2 h-14 overflow-hidden break-words">
-          {note.content}
-        </p>
+        <p
+          className="text-gray-600 font-mono mb-2 h-14 overflow-hidden break-words editor-content"
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(note.content) }}
+        />
 
         {note.tags?.length > 0 && (
           <div className="overflow-hidden whitespace-nowrap text-ellipsis">
