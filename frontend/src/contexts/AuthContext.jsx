@@ -5,7 +5,6 @@ const AuthContext = createContext();
 export { AuthContext };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -13,9 +12,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      const { user, token } = await authService.login(data);
+      const { token } = await authService.login(data);
       localStorage.setItem("token", token);
-      setUser(user);
       return true;
     } catch (err) {
       setError(err.message || "Login failed.");
@@ -29,9 +27,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      const { user, token } = await authService.signup(data);
+      const { token } = await authService.signup(data);
       localStorage.setItem("token", token);
-      setUser(user);
       return true;
     } catch (err) {
       setError(err.message || "Signup failed.");
@@ -43,11 +40,9 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("token");
-    setUser(null);
   };
 
   const value = {
-    user,
     loading,
     error,
     login,
