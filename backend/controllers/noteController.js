@@ -303,3 +303,22 @@ exports.getAllTagsForUser = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.toggleFavorite = catchAsync(async (req, res, next) => {
+  const note = await Note.findOne({ _id: req.params.id, user: req.user._id });
+
+  if (!note) {
+    return next(new AppError("Note not found", 404));
+  }
+
+  note.isFavorite = !note.isFavorite;
+  await note.save();
+
+  res.status(200).json({
+    status: "success",
+    message: `Note marked as ${note.isFavorite ? "favorite" : "not favorite"}`,
+    data: {
+      note,
+    },
+  });
+});
