@@ -7,12 +7,15 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import NoteCard from "../components/NoteCard";
 import NoteModal from "../components/NoteModal";
+import NewNoteModal from "../components/NewNoteModal";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [notes, setNotes] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
+  const [newNote, setNewNote] = useState({ title: "", content: "" });
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -33,6 +36,25 @@ const Dashboard = () => {
     fetchNotes();
   }, []);
 
+  const handleCreateNote = async () => {
+    const token = localStorage.getItem("token");
+    if (token && newNote.title) {
+      try {
+        const created = await noteService.createNote(newNote, token);
+
+        if (created && created.title) {
+          setNotes((prev) => [...prev, created]);
+          setShowModal(false);
+          setNewNote({ title: "", content: "" });
+        } else {
+          console.error("Note creation failed: ", created);
+        }
+      } catch (err) {
+        console.error("Error creating note:", err.message);
+      }
+    }
+  };
+
   if (loading) return <PixelLoader />;
 
   return (
@@ -43,6 +65,15 @@ const Dashboard = () => {
         <NoteModal
           noteId={selectedNote}
           onClose={() => setSelectedNote(null)}
+        />
+      )}
+
+      {showModal && (
+        <NewNoteModal
+          newNote={newNote}
+          setNewNote={setNewNote}
+          onClose={() => setShowModal(false)}
+          onSave={handleCreateNote}
         />
       )}
 
@@ -66,7 +97,7 @@ const Dashboard = () => {
             </Button>
           </div>
           <Button
-            onClick={() => {}}
+            onClick={() => setShowModal(true)}
             className="bg-custom-dark-pink text-white rounded-lg hover:bg-opacity-90 font-jersey"
           >
             <Plus strokeWidth={3} />

@@ -38,6 +38,20 @@ const noteService = {
       return null;
     }
   },
+
+  async createNote(noteData, token) {
+    try {
+      const res = await axios.post(`${API_URL}/notes`, noteData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return res.data?.data?.note || null;
+    } catch (err) {
+      console.error("Create note error:", err);
+      return null;
+    }
+  },
 };
 
 export default noteService;
