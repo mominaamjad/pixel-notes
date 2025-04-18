@@ -6,11 +6,13 @@ import NavBar from "../components/NavBar";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import NoteCard from "../components/NoteCard";
+import NoteModal from "../components/NoteModal";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [notes, setNotes] = useState([]);
+  const [selectedNote, setSelectedNote] = useState(null);
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -36,6 +38,13 @@ const Dashboard = () => {
   return (
     <div>
       <NavBar />
+
+      {selectedNote && (
+        <NoteModal
+          noteId={selectedNote}
+          onClose={() => setSelectedNote(null)}
+        />
+      )}
 
       <main className="container mx-auto py-8 px-4">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -75,7 +84,7 @@ const Dashboard = () => {
               <NoteCard
                 key={note._id || note.id}
                 note={note}
-                onClick={() => {}}
+                onClick={() => setSelectedNote(note._id)}
                 onDelete={() => {}}
               />
             ))}

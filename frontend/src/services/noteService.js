@@ -24,6 +24,20 @@ const noteService = {
       return [];
     }
   },
+
+  async getNoteById(noteId, token) {
+    try {
+      const res = await axios.get(`${API_URL}/notes/${noteId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return res.data?.data?.note || null;
+    } catch (err) {
+      console.error("Fetch note error:", err);
+      return null;
+    }
+  },
 };
 
 export default noteService;
