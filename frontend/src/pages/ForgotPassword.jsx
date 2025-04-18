@@ -94,67 +94,22 @@ const ForgotPassword = () => {
             </form>
           ) : (
             <div>
-              <p className="font-jersey text-custom-brown text-lg">
+              <p className="font-jersey text-center text-custom-brown text-lg">
                 Reset link sent. Please check your email :)
               </p>
             </div>
           )}
-          <Link
-            to="/login"
-            className="mt-3 text-custom-dark-pink font-jersey hover:underline hover:text-custom-light-pink inline-flex items-center"
-          >
-            Back to Login
-          </Link>
+          <div className="flex justify-center">
+            <Link
+              to="/login"
+              className="mt-3 text-custom-dark-pink bg-custom-light-pink py-1 px-4 rounded font-jersey hover:underline hover:text-custom-light-pink inline-flex items-center"
+            >
+              Back to Login
+            </Link>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 export default ForgotPassword;
-
-{
-  /* <Button
-type="submit"
-disabled={loading}
-className="w-full bg-custom-dark-pink text-white py-2 px-4 border-2 border-black hover:bg-custom-light-pink transition-colors relative mt-4"
-style={{
-  boxShadow: "3px 3px 0 rgba(0, 0, 0, 0.2)",
-}}
->
-{loading ? (
-  <span className="flex items-center justify-center">
-    <span className="animate-pulse">Sending...</span>
-  </span>
-) : (
-  "Send Reset Link"
-)}
-</Button>
-
-<div className="mt-6 text-center font-jersey text-custom-brown flex justify-center items-center space-x-2">
-<div className="w-8 h-px bg-custom-brown"></div>
-<p>OR</p>
-<div className="w-8 h-px bg-custom-brown"></div>
-</div>
-
-<div className="text-center font-jersey">
-<Link
-  to="/login"
-  className="text-custom-dark-pink hover:underline inline-flex items-center"
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-4 w-4 mr-1"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M15 19l-7-7 7-7"
-    />
-  </svg>
-  Back to Login
-</Link> */
-}
