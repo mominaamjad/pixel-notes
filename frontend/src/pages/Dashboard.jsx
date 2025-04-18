@@ -55,6 +55,18 @@ const Dashboard = () => {
     }
   };
 
+  const handleDeleteNote = async (noteId) => {
+    const token = localStorage.getItem("token");
+    if (!token || !noteId) return;
+
+    const deleted = await noteService.deleteNote(noteId, token);
+    if (deleted) {
+      setNotes((prev) => prev.filter((note) => note._id !== noteId));
+    } else {
+      console.error("Failed to delete note");
+    }
+  };
+
   if (loading) return <PixelLoader />;
 
   return (
@@ -116,7 +128,7 @@ const Dashboard = () => {
                 key={note._id || note.id}
                 note={note}
                 onClick={() => setSelectedNote(note._id)}
-                onDelete={() => {}}
+                onDelete={() => handleDeleteNote(note._id)}
               />
             ))}
         </div>

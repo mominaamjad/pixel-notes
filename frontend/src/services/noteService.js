@@ -52,6 +52,20 @@ const noteService = {
       return null;
     }
   },
+
+  async deleteNote(noteId, token) {
+    try {
+      const res = await axios.delete(`${API_URL}/notes/${noteId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return res.status === 204;
+    } catch (err) {
+      console.error("Delete note error:", err);
+      return false;
+    }
+  },
 };
 
 export default noteService;
