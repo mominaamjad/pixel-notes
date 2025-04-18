@@ -49,7 +49,7 @@ exports.createNote = catchAsync(async (req, res, next) => {
 });
 
 exports.getNotes = catchAsync(async (req, res, next) => {
-  const { tag, favorite, search } = req.query;
+  const { tag, favorite, color } = req.query;
 
   const query = { user: req.user._id };
 
@@ -61,11 +61,8 @@ exports.getNotes = catchAsync(async (req, res, next) => {
     query.isFavorite = true;
   }
 
-  if (search) {
-    query.$or = [
-      { title: { $regex: search, $options: "i" } },
-      { content: { $regex: search, $options: "i" } },
-    ];
+  if (color) {
+    query.color = color;
   }
 
   const result = await Note.find(query);
