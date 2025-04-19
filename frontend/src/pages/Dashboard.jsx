@@ -6,8 +6,8 @@ import NavBar from "../components/NavBar";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import NoteCard from "../components/NoteCard";
+import NoteViewModal from "../components/NoteViewModal";
 import NoteModal from "../components/NoteModal";
-import NewNoteModal from "../components/NewNoteModal";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
@@ -15,7 +15,9 @@ const Dashboard = () => {
   const [notes, setNotes] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
   const [newNote, setNewNote] = useState({ title: "", content: "" });
-  const [showModal, setShowModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -44,7 +46,7 @@ const Dashboard = () => {
 
         if (created && created.title) {
           setNotes((prev) => [...prev, created]);
-          setShowModal(false);
+          setShowCreateModal(false);
           setNewNote({ title: "", content: "" });
         } else {
           console.error("Note creation failed: ", created);
@@ -67,25 +69,61 @@ const Dashboard = () => {
     }
   };
 
+  const handleUpdateNote = async (updatedNoteData) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const updatedNote = await noteService.updateNote(
+          selectedNote,
+          updatedNoteData,
+          token
+        );
+        if (updatedNote) {
+          setNotes((prev) =>
+            prev.map((n) => (n._id === updatedNote._id ? updatedNote : n))
+          );
+        }
+        setShowEditModal(false);
+        setSelectedNote(null);
+      } catch (err) {
+        console.error("Error creating note:", err.message);
+      }
+    }
+  };
+
   if (loading) return <PixelLoader />;
 
   return (
     <div>
       <NavBar />
 
-      {selectedNote && (
-        <NoteModal
+      {showViewModal && (
+        <NoteViewModal
           noteId={selectedNote}
-          onClose={() => setSelectedNote(null)}
+          onClose={() => {
+            setShowViewModal(false);
+            setSelectedNote(null);
+          }}
         />
       )}
 
-      {showModal && (
-        <NewNoteModal
-          newNote={newNote}
-          setNewNote={setNewNote}
-          onClose={() => setShowModal(false)}
+      {showCreateModal && (
+        <NoteModal
+          mode="new"
+          onClose={() => setShowCreateModal(false)}
           onSave={handleCreateNote}
+        />
+      )}
+
+      {showEditModal && (
+        <NoteModal
+          mode="edit"
+          noteId={selectedNote}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedNote(null);
+          }}
+          onSave={handleUpdateNote}
         />
       )}
 
@@ -109,7 +147,7 @@ const Dashboard = () => {
             </Button>
           </div>
           <Button
-            onClick={() => setShowModal(true)}
+            onClick={() => setShowCreateModal(true)}
             className="bg-custom-dark-pink text-white rounded-lg hover:bg-opacity-90 font-jersey"
           >
             <Plus strokeWidth={3} />
@@ -127,7 +165,14 @@ const Dashboard = () => {
               <NoteCard
                 key={note._id || note.id}
                 note={note}
-                onClick={() => setSelectedNote(note._id)}
+                onClick={() => {
+                  setSelectedNote(note._id);
+                  setShowViewModal(true);
+                }}
+                onEdit={() => {
+                  setSelectedNote(note._id);
+                  setShowEditModal(true);
+                }}
                 onDelete={() => handleDeleteNote(note._id)}
               />
             ))}

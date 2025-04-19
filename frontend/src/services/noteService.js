@@ -66,6 +66,20 @@ const noteService = {
       return false;
     }
   },
+
+  async updateNote(noteId, noteData, token) {
+    try {
+      const res = await axios.patch(`${API_URL}/notes/${noteId}`, noteData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return res.data?.data?.note || null;
+    } catch (err) {
+      console.error("Update note error:", err);
+      return null;
+    }
+  },
 };
 
 export default noteService;
