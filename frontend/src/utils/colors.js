@@ -1,8 +1,8 @@
 export const colorOptions = [
-  "#FAEDCB",
-  "#C9E4DE",
-  "#C6DEF1",
-  "#DBCDF0",
-  "#F2C6DE",
-  "#F7D9C4",
+  "#267A9E",
+  "#51A885",
+  "#F5A936",
+  "#ED8C37",
+  "#DB7476",
+  "#986B9B",
 ];
