@@ -49,7 +49,7 @@ exports.createNote = catchAsync(async (req, res, next) => {
 });
 
 exports.getNotes = catchAsync(async (req, res, next) => {
-  const { tag, favorite, search } = req.query;
+  const { tag, favorite, color, archived } = req.query;
 
   const query = { user: req.user._id };
 
@@ -61,11 +61,14 @@ exports.getNotes = catchAsync(async (req, res, next) => {
     query.isFavorite = true;
   }
 
-  if (search) {
-    query.$or = [
-      { title: { $regex: search, $options: "i" } },
-      { content: { $regex: search, $options: "i" } },
-    ];
+  if (color) {
+    query.color = color;
+  }
+
+  if (archived === "true") {
+    query.isArchived = true;
+  } else {
+    query.isArchived = false;
   }
 
   const result = await Note.find(query);
@@ -115,8 +118,6 @@ exports.updateNoteById = catchAsync(async (req, res, next) => {
       content: req.body.content,
       tags: req.body.tags,
       color: req.body.color,
-      isFavorite: req.body.isFavorite,
-      isArchived: req.body.isArchived,
     },
     { new: true }
   );
@@ -286,4 +287,60 @@ exports.exportNotes = catchAsync(async (req, res, next) => {
       data: { notes },
     });
   }
+});
+
+exports.getAllTagsForUser = catchAsync(async (req, res, next) => {
+  const notes = await Note.find({ user: req.user._id }, "tags");
+
+  const tagsSet = new Set();
+  notes.forEach((note) => {
+    note.tags?.forEach((tag) => tagsSet.add(tag));
+  });
+
+  const tags = Array.from(tagsSet);
+
+  res.status(200).json({
+    status: "success",
+    length: tags.length,
+    data: {
+      tags,
+    },
+  });
+});
+
+exports.toggleFavorite = catchAsync(async (req, res, next) => {
+  const note = await Note.findOne({ _id: req.params.id, user: req.user._id });
+
+  if (!note) {
+    return next(new AppError("Note not found", 404));
+  }
+
+  note.isFavorite = !note.isFavorite;
+  await note.save();
+
+  res.status(200).json({
+    status: "success",
+    message: `Note marked as ${note.isFavorite ? "favorite" : "not favorite"}`,
+    data: {
+      note,
+    },
+  });
+});
+
+exports.toggleArchive = catchAsync(async (req, res, next) => {
+  const note = await Note.findOne({ _id: req.params.id, user: req.user._id });
+
+  if (!note) {
+    return next(new AppError("Note not found", 404));
+  }
+
+  note.isArchived = !note.isArchived;
+  await note.save();
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      note,
+    },
+  });
 });
