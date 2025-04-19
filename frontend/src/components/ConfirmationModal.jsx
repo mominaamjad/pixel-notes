@@ -1,5 +1,6 @@
 import React from "react";
 import Button from "./Button";
+
 const ConfirmationModal = ({ type, onConfirm, onCancel }) => (
   <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
     <div className="bg-custom-offwhite border p-6 shadow-xl text-center w-96">
@@ -25,4 +26,5 @@ const ConfirmationModal = ({ type, onConfirm, onCancel }) => (
     </div>
   </div>
 );
+
 export default ConfirmationModal;

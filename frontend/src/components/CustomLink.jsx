@@ -12,4 +12,5 @@ const CustomLink = ({ to = "/", children }) => {
     </Link>
   );
 };
+
 export default CustomLink;

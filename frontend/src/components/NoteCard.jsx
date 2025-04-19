@@ -4,7 +4,7 @@ import DOMPurify from "dompurify";
 import { Pencil, Star, Trash2 } from "lucide-react";
 import ConfirmationModal from "./ConfirmationModal";
 
-const NoteCard = ({ note, onClick = () => {}, onDelete }) => {
+const NoteCard = ({ note, onClick = () => {}, onEdit, onDelete }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   return (
@@ -60,7 +60,13 @@ const NoteCard = ({ note, onClick = () => {}, onDelete }) => {
           {note.isArchived && (
             <span className="text-custom-blue">Archived</span>
           )}
-          <button className="text-custom-light-pink hover:text-custom-dark-pink">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+            className="text-custom-light-pink hover:text-custom-dark-pink"
+          >
             <Pencil />
           </button>
           <button
