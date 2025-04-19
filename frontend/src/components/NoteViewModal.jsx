@@ -65,8 +65,10 @@ const NoteViewModal = ({ noteId, onClose }) => {
   };
 
   const handleArchiveToggle = async (noteId) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
     try {
-      const updatedNote = await noteService.toggleArchive(noteId);
+      const updatedNote = await noteService.toggleArchive(noteId, token);
       setNote(updatedNote);
       toast.success(
         `Note ${note.isArchived ? "Archived" : "Unarchived"} Successfully`

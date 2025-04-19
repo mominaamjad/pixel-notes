@@ -93,6 +93,25 @@ const Dashboard = () => {
     }
   };
 
+  const handleToggleFavorite = async (noteId) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const updatedNote = await noteService.toggleFavorite(noteId, token);
+      setNotes((prevNotes) =>
+        prevNotes.map((note) =>
+          note._id === updatedNote._id ? updatedNote : note
+        )
+      );
+      toast.success(
+        `Note ${updatedNote.isFavorite ? "Starred" : "Unstarred"} Successfully`
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error("Error starring note");
+    }
+  };
+
   if (loading) return <PixelLoader />;
 
   return (
@@ -176,6 +195,7 @@ const Dashboard = () => {
                   setShowEditModal(true);
                 }}
                 onDelete={() => handleDeleteNote(note._id)}
+                onStar={() => handleToggleFavorite(note._id)}
               />
             ))}
         </div>

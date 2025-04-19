@@ -34,7 +34,7 @@ const noteService = {
       });
       return res.data?.data?.note || null;
     } catch (err) {
-      console.error("Fetch note error:", err);
+      handleError(err);
       return null;
     }
   },
@@ -48,7 +48,7 @@ const noteService = {
       });
       return res.data?.data?.note || null;
     } catch (err) {
-      console.error("Create note error:", err);
+      handleError(err);
       return null;
     }
   },
@@ -62,7 +62,7 @@ const noteService = {
       });
       return res.status === 204;
     } catch (err) {
-      console.error("Delete note error:", err);
+      handleError(err);
       return false;
     }
   },
@@ -76,7 +76,7 @@ const noteService = {
       });
       return res.data?.data?.note || null;
     } catch (err) {
-      console.error("Update note error:", err);
+      handleError(err);
       return null;
     }
   },
@@ -92,7 +92,7 @@ const noteService = {
       });
       return res;
     } catch (err) {
-      console.error("Download note error:", err);
+      handleError(err);
       return null;
     }
   },
@@ -110,7 +110,25 @@ const noteService = {
       );
       return res.data.data.note;
     } catch (err) {
-      console.error("Toggle archive error:", err);
+      handleError(err);
+      return null;
+    }
+  },
+
+  async toggleFavorite(noteId, token) {
+    try {
+      const res = await axios.patch(
+        `${API_URL}/notes/${noteId}/favorite`,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return res.data.data.note;
+    } catch (err) {
+      handleError(err);
       return null;
     }
   },
