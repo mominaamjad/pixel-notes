@@ -8,7 +8,10 @@ export const handleCreateNote = async (
 ) => {
   const token = localStorage.getItem("token");
   if (token && newNote.title) {
-    console.log("Creating note:", newNote);
+    if (!newNote.content?.trim()) {
+      toast.error("Please add content to the note");
+      return;
+    }
     try {
       const created = await noteService.createNote(newNote, token);
 
