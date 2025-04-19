@@ -9,6 +9,7 @@ import Button from "../components/Button";
 import NoteCard from "../components/NoteCard";
 import NoteViewModal from "../components/NoteViewModal";
 import NoteModal from "../components/NoteModal";
+import FilterModal from "../components/FilterModal";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
@@ -18,6 +19,12 @@ const Dashboard = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filters, setFilters] = useState({
+    tags: [],
+    color: "",
+    favorite: null,
+  });
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -131,6 +138,22 @@ const Dashboard = () => {
     }
   };
 
+  const handleApplyFilters = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    const filteredNotes = await noteService.getFilteredNotes(filters, token);
+    setNotes(filteredNotes);
+    setShowFilterModal(false);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      tags: [],
+      color: "",
+      favorite: null,
+    });
+  };
+
   if (loading) return <PixelLoader />;
 
   return (
@@ -168,6 +191,16 @@ const Dashboard = () => {
         />
       )}
 
+      {showFilterModal && (
+        <FilterModal
+          selectedFilters={filters}
+          setSelectedFilters={setFilters}
+          onApply={handleApplyFilters}
+          onClear={handleClearFilters}
+          onClose={() => setShowFilterModal(false)}
+        />
+      )}
+
       <main className="container mx-auto py-8 px-4">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
           <div className="flex items-center justify-center w-full md:w-1/2">
@@ -181,7 +214,7 @@ const Dashboard = () => {
               leftIcon={<Search />}
             />
             <Button
-              onClick={() => {}}
+              onClick={() => setShowFilterModal(true)}
               className="ml-2 bg-custom-brown text-white"
             >
               Filter

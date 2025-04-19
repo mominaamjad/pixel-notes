@@ -25,6 +25,29 @@ const noteService = {
     }
   },
 
+  async getFilteredNotes(filters, token) {
+    try {
+      const params = new URLSearchParams();
+
+      if (filters.tags.length) params.append("tag", filters.tags.join(","));
+      if (filters.color) params.append("color", filters.color);
+      if (filters.favorite !== null)
+        params.append("favorite", filters.favorite);
+      params.append("archived", "false");
+
+      const res = await axios.get(`${API_URL}/notes?${params}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return res.data?.data?.notes || [];
+    } catch (err) {
+      handleError(err);
+      return [];
+    }
+  },
+
   async getNoteById(noteId, token) {
     try {
       const res = await axios.get(`${API_URL}/notes/${noteId}`, {
