@@ -123,9 +123,11 @@ const Dashboard = () => {
     try {
       const updatedNote = await noteService.toggleArchive(noteId, token);
       setNotes((prevNotes) =>
-        prevNotes.map((note) =>
-          note._id === updatedNote._id ? updatedNote : note
-        )
+        updatedNote.isArchived
+          ? prevNotes.map((note) =>
+              note._id === updatedNote._id ? updatedNote : note
+            )
+          : prevNotes.filter((note) => note._id !== updatedNote._id)
       );
       toast.success(
         `Note ${

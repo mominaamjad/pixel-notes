@@ -57,9 +57,6 @@ const NoteCard = ({ note, onClick = () => {}, onEdit, onDelete, onStar }) => {
         <span>{format(new Date(note.updatedAt), "dd MMM yyyy, hh:mm a")}</span>
 
         <div className="flex items-center space-x-2">
-          {note.isArchived && (
-            <span className="text-custom-blue">Archived</span>
-          )}
           <button
             onClick={(e) => {
               e.stopPropagation();

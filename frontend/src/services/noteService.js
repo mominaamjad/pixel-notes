@@ -48,6 +48,24 @@ const noteService = {
     }
   },
 
+  async getArchivedNotes(token) {
+    try {
+      const params = new URLSearchParams();
+      params.append("archived", "true");
+
+      const res = await axios.get(`${API_URL}/notes?${params}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return res.data?.data?.notes || [];
+    } catch (err) {
+      handleError(err);
+      return [];
+    }
+  },
+
   async getNoteById(noteId, token) {
     try {
       const res = await axios.get(`${API_URL}/notes/${noteId}`, {

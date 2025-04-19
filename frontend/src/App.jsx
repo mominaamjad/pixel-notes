@@ -7,6 +7,7 @@ import SignupForm from "./pages/SignupForm";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
+import Archives from "./pages/Archives";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Toaster />
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/archives" element={<Archives />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/signup" element={<SignupForm />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
