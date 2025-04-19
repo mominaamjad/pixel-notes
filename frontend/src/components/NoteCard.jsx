@@ -44,7 +44,7 @@ const NoteCard = ({ note, onClick = () => {}, onEdit, onDelete }) => {
             {note.tags.map((tag, idx) => (
               <span
                 key={idx}
-                className="bg-custom-light-pink text-custom-dark-pink px-2 py-0.5 mr-1 rounded-full text-xs font-semibold inline-block"
+                className="bg-custom-light-pink text-custom-dark-pink px-2 py-0.5 mr-1 rounded-full text-xs font-semibold font-mono inline-block"
               >
                 {tag}
               </span>

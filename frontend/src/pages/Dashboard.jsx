@@ -8,13 +8,13 @@ import Button from "../components/Button";
 import NoteCard from "../components/NoteCard";
 import NoteViewModal from "../components/NoteViewModal";
 import NoteModal from "../components/NoteModal";
+import toast from "react-hot-toast";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [notes, setNotes] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
-  const [newNote, setNewNote] = useState({ title: "", content: "" });
   const [showViewModal, setShowViewModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -38,17 +38,19 @@ const Dashboard = () => {
     fetchNotes();
   }, []);
 
-  const handleCreateNote = async () => {
+  const handleCreateNote = async (newNote) => {
     const token = localStorage.getItem("token");
     if (token && newNote.title) {
+      console.log("Creating note:", newNote);
       try {
         const created = await noteService.createNote(newNote, token);
 
         if (created && created.title) {
           setNotes((prev) => [...prev, created]);
           setShowCreateModal(false);
-          setNewNote({ title: "", content: "" });
+          toast.success("New note created successfully");
         } else {
+          toast.error("Note creation failed");
           console.error("Note creation failed: ", created);
         }
       } catch (err) {
