@@ -1,15 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { Search, Plus } from "lucide-react";
-import toast from "react-hot-toast";
 import noteService from "../services/noteService";
-import PixelLoader from "../components/PixelLoader";
-import NavBar from "../components/NavBar";
-import Input from "../components/Input";
-import Button from "../components/Button";
-import NoteCard from "../components/NoteCard";
-import NoteViewModal from "../components/NoteViewModal";
-import NoteModal from "../components/NoteModal";
-import FilterModal from "../components/FilterModal";
+import {
+  handleApplyFilters,
+  handleCreateNote,
+  handleDeleteNote,
+  handleToggleArchive,
+  handleToggleFavorite,
+  handleUpdateNote,
+} from "../utils/noteHandlers";
+import {
+  PixelLoader,
+  NavBar,
+  Input,
+  Button,
+  NoteCard,
+  NoteViewModal,
+  NoteModal,
+  FilterModal,
+} from "../components";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
@@ -45,107 +54,34 @@ const Dashboard = () => {
     fetchNotes();
   }, []);
 
-  const handleCreateNote = async (newNote) => {
-    const token = localStorage.getItem("token");
-    if (token && newNote.title) {
-      console.log("Creating note:", newNote);
-      try {
-        const created = await noteService.createNote(newNote, token);
-
-        if (created && created.title) {
-          setNotes((prev) => [...prev, created]);
-          setShowCreateModal(false);
-          toast.success("New note created successfully");
-        } else {
-          toast.error("Note creation failed");
-          console.error("Note creation failed: ", created);
-        }
-      } catch (err) {
-        console.error("Error creating note:", err.message);
-      }
-    }
+  const onCreate = async (noteData) => {
+    await handleCreateNote(noteData, setNotes, setShowCreateModal);
   };
 
-  const handleDeleteNote = async (noteId) => {
-    const token = localStorage.getItem("token");
-    if (!token || !noteId) return;
-
-    const deleted = await noteService.deleteNote(noteId, token);
-    if (deleted) {
-      setNotes((prev) => prev.filter((note) => note._id !== noteId));
-    } else {
-      console.error("Failed to delete note");
-    }
+  const onDelete = async (noteId) => {
+    await handleDeleteNote(noteId, setNotes);
   };
 
-  const handleUpdateNote = async (updatedNoteData) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const updatedNote = await noteService.updateNote(
-          selectedNote,
-          updatedNoteData,
-          token
-        );
-        if (updatedNote) {
-          setNotes((prev) =>
-            prev.map((n) => (n._id === updatedNote._id ? updatedNote : n))
-          );
-        }
-        setShowEditModal(false);
-        setSelectedNote(null);
-      } catch (err) {
-        console.error("Error creating note:", err.message);
-      }
-    }
+  const onUpdate = async (updatedNoteData) => {
+    await handleUpdateNote(
+      selectedNote,
+      updatedNoteData,
+      setNotes,
+      setShowEditModal,
+      setSelectedNote
+    );
   };
 
-  const handleToggleFavorite = async (noteId) => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    try {
-      const updatedNote = await noteService.toggleFavorite(noteId, token);
-      setNotes((prevNotes) =>
-        prevNotes.map((note) =>
-          note._id === updatedNote._id ? updatedNote : note
-        )
-      );
-      toast.success(`Note ${updatedNote.isFavorite ? "Starred" : "Unstarred"}`);
-    } catch (err) {
-      console.error(err);
-      toast.error("Error starring note");
-    }
+  const onToggleFavorite = async (noteId) => {
+    await handleToggleFavorite(noteId, setNotes);
   };
 
-  const handleArchiveToggle = async (noteId) => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    try {
-      const updatedNote = await noteService.toggleArchive(noteId, token);
-      setNotes((prevNotes) =>
-        updatedNote.isArchived
-          ? prevNotes.map((note) =>
-              note._id === updatedNote._id ? updatedNote : note
-            )
-          : prevNotes.filter((note) => note._id !== updatedNote._id)
-      );
-      toast.success(
-        `Note ${
-          updatedNote.isArchived ? "Archived" : "Unarchived"
-        } Successfully`
-      );
-    } catch (err) {
-      console.error(err);
-      toast.error("Error archiving note");
-    }
+  const onToggleArchive = async (noteId) => {
+    await handleToggleArchive(noteId, setNotes);
   };
 
-  const handleApplyFilters = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    const filteredNotes = await noteService.getFilteredNotes(filters, token);
-    setNotes(filteredNotes);
-    setShowFilterModal(false);
+  const onApplyFilters = async () => {
+    await handleApplyFilters(filters, setNotes, setShowFilterModal);
   };
 
   const handleClearFilters = () => {
@@ -169,7 +105,7 @@ const Dashboard = () => {
             setShowViewModal(false);
             setSelectedNote(null);
           }}
-          onArchive={() => handleArchiveToggle(selectedNote)}
+          onArchive={() => onToggleArchive(selectedNote)}
         />
       )}
 
@@ -177,7 +113,7 @@ const Dashboard = () => {
         <NoteModal
           mode="new"
           onClose={() => setShowCreateModal(false)}
-          onSave={handleCreateNote}
+          onSave={onCreate}
         />
       )}
 
@@ -189,7 +125,7 @@ const Dashboard = () => {
             setShowEditModal(false);
             setSelectedNote(null);
           }}
-          onSave={handleUpdateNote}
+          onSave={onUpdate}
         />
       )}
 
@@ -197,7 +133,7 @@ const Dashboard = () => {
         <FilterModal
           selectedFilters={filters}
           setSelectedFilters={setFilters}
-          onApply={handleApplyFilters}
+          onApply={onApplyFilters}
           onClear={handleClearFilters}
           onClose={() => setShowFilterModal(false)}
         />
@@ -249,8 +185,8 @@ const Dashboard = () => {
                   setSelectedNote(note._id);
                   setShowEditModal(true);
                 }}
-                onDelete={() => handleDeleteNote(note._id)}
-                onStar={() => handleToggleFavorite(note._id)}
+                onDelete={() => onDelete(note._id)}
+                onStar={() => onToggleFavorite(note._id)}
               />
             ))}
         </div>

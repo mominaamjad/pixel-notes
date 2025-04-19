@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import DOMPurify from "dompurify";
-import noteService from "../services/noteService";
-import Navbar from "../components/NavBar";
-import PixelLoader from "../components/PixelLoader";
-import ConfirmationModal from "../components/ConfirmationModal";
 import { ArchiveX, Trash2 } from "lucide-react";
-import toast from "react-hot-toast";
+import noteService from "../services/noteService";
+import { handleDeleteNote, handleToggleArchive } from "../utils/noteHandlers";
+import { Navbar, PixelLoader, ConfirmationModal } from "../components";
 
 const Archives = () => {
   const [loading, setLoading] = useState(false);
@@ -34,39 +32,12 @@ const Archives = () => {
     fetchArchivedNotes();
   }, []);
 
-  const handleDeleteNote = async (noteId) => {
-    const token = localStorage.getItem("token");
-    if (!token || !noteId) return;
-
-    const deleted = await noteService.deleteNote(noteId, token);
-    if (deleted) {
-      setNotes((prev) => prev.filter((note) => note._id !== noteId));
-    } else {
-      console.error("Failed to delete note");
-    }
+  const onDelete = async (noteId) => {
+    await handleDeleteNote(noteId, setNotes);
   };
 
-  const handleArchiveToggle = async (noteId) => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    try {
-      const updatedNote = await noteService.toggleArchive(noteId, token);
-      setNotes((prevNotes) =>
-        updatedNote.isArchived
-          ? prevNotes.map((note) =>
-              note._id === updatedNote._id ? updatedNote : note
-            )
-          : prevNotes.filter((note) => note._id !== updatedNote._id)
-      );
-      toast.success(
-        `Note ${
-          updatedNote.isArchived ? "Archived" : "Unarchived"
-        } Successfully`
-      );
-    } catch (err) {
-      console.error(err);
-      toast.error("Error archiving note");
-    }
+  const onToggleArchive = async (noteId) => {
+    await handleToggleArchive(noteId, setNotes);
   };
 
   if (loading) return <PixelLoader />;
@@ -77,7 +48,7 @@ const Archives = () => {
         <ConfirmationModal
           type="delete"
           onConfirm={() => {
-            handleDeleteNote(noteToDelete);
+            onDelete(noteToDelete);
             setShowConfirmation(false);
             setNoteToDelete(null);
           }}
@@ -93,7 +64,7 @@ const Archives = () => {
         <ConfirmationModal
           type="archive"
           onConfirm={() => {
-            handleArchiveToggle(noteToToggleArchive);
+            onToggleArchive(noteToToggleArchive);
             setShowArchiveConfirmation(false);
             setNoteToToggleArchive(null);
           }}

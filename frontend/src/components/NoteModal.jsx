@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import HTMLEditor from "react-simple-wysiwyg";
 import { Plus, X } from "lucide-react";
-import { colorOptions } from "../utils/colors";
 import noteService from "../services/noteService";
+import { colorOptions } from "../utils/colors";
 import Button from "./Button";
 import ColorTile from "./ColorTile";
 import TagChip from "./TagChip";
