@@ -15,6 +15,7 @@ const NoteModal = ({ mode = "new", noteId, onClose, onSave }) => {
     tags: [],
     color: "#267A9E",
   });
+  const [userTags, setUserTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
@@ -30,6 +31,16 @@ const NoteModal = ({ mode = "new", noteId, onClose, onSave }) => {
       fetchNote();
     }
   }, [mode, noteId]);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      const token = localStorage.getItem("token");
+      const tags = await noteService.getUserTags(token);
+      setUserTags(tags);
+    };
+
+    fetchTags();
+  }, []);
 
   const handleChange = (field, value) => {
     setNote((prev) => ({ ...prev, [field]: value }));
@@ -48,6 +59,7 @@ const NoteModal = ({ mode = "new", noteId, onClose, onSave }) => {
         ...prev,
         tags: [...prev.tags, tag],
       }));
+      setUserTags((prev) => prev.filter((t) => t !== tag));
     }
     setTagInput("");
   };
@@ -57,6 +69,9 @@ const NoteModal = ({ mode = "new", noteId, onClose, onSave }) => {
       ...prev,
       tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
+    setUserTags((prev) =>
+      prev.includes(tagToRemove) ? prev : [...prev, tagToRemove]
+    );
   };
 
   const handleSave = async () => {
@@ -132,7 +147,12 @@ const NoteModal = ({ mode = "new", noteId, onClose, onSave }) => {
             <p className="text-sm font-medium text-gray-700">Tags</p>
             <div className="flex flex-wrap">
               {note.tags.map((tag) => (
-                <TagChip key={tag} text={tag} onRemove={() => removeTag(tag)} />
+                <TagChip
+                  key={tag}
+                  text={tag}
+                  onRemove={() => removeTag(tag)}
+                  className="bg-custom-light-pink"
+                />
               ))}
             </div>
             <div className="flex">
@@ -151,6 +171,16 @@ const NoteModal = ({ mode = "new", noteId, onClose, onSave }) => {
                 <Plus size={18} />
               </Button>
             </div>
+          </div>
+          <div className="flex flex-wrap">
+            {userTags.map((tag) => (
+              <TagChip
+                key={tag}
+                text={tag}
+                onClick={() => addTag(tag)}
+                className="bg-custom-offwhite cursor-pointer hover:bg-custom-light-pink"
+              />
+            ))}
           </div>
 
           {/* Action Buttons */}

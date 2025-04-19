@@ -132,6 +132,23 @@ const noteService = {
       return null;
     }
   },
+
+  async getUserTags(token) {
+    try {
+      const res = await axios.get(`${API_URL}/notes/tags`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Cache-Control": "no-cache",
+        },
+        validateStatus: (status) => status < 500,
+      });
+
+      return res.status === 204 ? [] : res.data?.data?.tags || [];
+    } catch (err) {
+      handleError(err);
+      return [];
+    }
+  },
 };
 
 export default noteService;
