@@ -80,6 +80,40 @@ const noteService = {
       return null;
     }
   },
+
+  async downloadNote(noteId, format = "txt", token) {
+    try {
+      const res = await axios.get(`${API_URL}/notes/download/${noteId}`, {
+        params: { format },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: "blob",
+      });
+      return res;
+    } catch (err) {
+      console.error("Download note error:", err);
+      return null;
+    }
+  },
+
+  async toggleArchive(noteId, token) {
+    try {
+      const res = await axios.patch(
+        `${API_URL}/notes/${noteId}/archive`,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return res.data.data.note;
+    } catch (err) {
+      console.error("Toggle archive error:", err);
+      return null;
+    }
+  },
 };
 
 export default noteService;
