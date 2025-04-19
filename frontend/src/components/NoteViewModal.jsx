@@ -4,7 +4,7 @@ import { toast } from "react-hot-toast";
 import { Archive, ArchiveX, Download, X } from "lucide-react";
 import noteService from "../services/noteService";
 
-const NoteViewModal = ({ noteId, onClose }) => {
+const NoteViewModal = ({ noteId, onClose, onArchive }) => {
   const [note, setNote] = useState(null);
   const [showFormatOptions, setShowFormatOptions] = useState(false);
   const formatRef = useRef(null);
@@ -64,21 +64,6 @@ const NoteViewModal = ({ noteId, onClose }) => {
     }
   };
 
-  const handleArchiveToggle = async (noteId) => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    try {
-      const updatedNote = await noteService.toggleArchive(noteId, token);
-      setNote(updatedNote);
-      toast.success(
-        `Note ${note.isArchived ? "Archived" : "Unarchived"} Successfully`
-      );
-    } catch (err) {
-      console.error(err);
-      toast.error("Error archiving note");
-    }
-  };
-
   if (!note) return null;
 
   return (
@@ -107,7 +92,7 @@ const NoteViewModal = ({ noteId, onClose }) => {
               <Download size={20} />
             </button>
             <button
-              onClick={() => handleArchiveToggle(noteId)}
+              onClick={onArchive}
               title={note.isArchived ? "Unarchive" : "Archive"}
               className="w-7 h-7 border-white border-2 flex items-center justify-center bg-custom-light-pink"
             >

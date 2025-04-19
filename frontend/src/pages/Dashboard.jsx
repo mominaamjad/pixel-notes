@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Search, Plus } from "lucide-react";
+import toast from "react-hot-toast";
 import noteService from "../services/noteService";
 import PixelLoader from "../components/PixelLoader";
 import NavBar from "../components/NavBar";
@@ -8,7 +9,6 @@ import Button from "../components/Button";
 import NoteCard from "../components/NoteCard";
 import NoteViewModal from "../components/NoteViewModal";
 import NoteModal from "../components/NoteModal";
-import toast from "react-hot-toast";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
@@ -103,12 +103,31 @@ const Dashboard = () => {
           note._id === updatedNote._id ? updatedNote : note
         )
       );
-      toast.success(
-        `Note ${updatedNote.isFavorite ? "Starred" : "Unstarred"} Successfully`
-      );
+      toast.success(`Note ${updatedNote.isFavorite ? "Starred" : "Unstarred"}`);
     } catch (err) {
       console.error(err);
       toast.error("Error starring note");
+    }
+  };
+
+  const handleArchiveToggle = async (noteId) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const updatedNote = await noteService.toggleArchive(noteId, token);
+      setNotes((prevNotes) =>
+        prevNotes.map((note) =>
+          note._id === updatedNote._id ? updatedNote : note
+        )
+      );
+      toast.success(
+        `Note ${
+          updatedNote.isArchived ? "Archived" : "Unarchived"
+        } Successfully`
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error("Error archiving note");
     }
   };
 
@@ -125,6 +144,7 @@ const Dashboard = () => {
             setShowViewModal(false);
             setSelectedNote(null);
           }}
+          onArchive={() => handleArchiveToggle(selectedNote)}
         />
       )}
 
