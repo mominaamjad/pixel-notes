@@ -18,6 +18,13 @@ const LoginForm = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, []);
+
+  useEffect(() => {
     if (error) toast.error(error);
   }, [error]);
 
