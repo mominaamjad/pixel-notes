@@ -2,6 +2,7 @@ import "./App.css";
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Archives from "./pages/Archives";
 import Profile from "./pages/Profile";
@@ -15,6 +16,7 @@ function App() {
     <>
       <Toaster />
       <Routes>
+        <Route path="/" element={<Landing />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/archives" element={<Archives />} />
         <Route path="/profile" element={<Profile />} />
