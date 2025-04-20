@@ -26,7 +26,7 @@ const Navbar = () => {
         />
       )}
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <h1 className="font-pixel text-xl tracking-wide text-custom-dark-pink">
+        <h1 className="font-pixel text-xl tracking-wide mb-1 bg-custom-dark-pink text-white px-2 py-1 shadow-[5px_5px_0_#eba2b0]">
           PIXEL NOTES
         </h1>
 
