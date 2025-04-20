@@ -70,5 +70,23 @@ const authService = {
       handleError(err);
     }
   },
+
+  async updatePassword({ data, token }) {
+    try {
+      const response = await axios.patch(
+        `${API_URL}/users/updatePassword`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(response.data);
+      return response.data.data.user;
+    } catch (err) {
+      handleError(err);
+    }
+  },
 };
 export default authService;
