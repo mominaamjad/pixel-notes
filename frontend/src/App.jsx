@@ -3,14 +3,16 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Landing from "./pages/Landing";
-import LoginForm from "./pages/LoginForm";
-import SignupForm from "./pages/SignupForm";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import Dashboard from "./pages/Dashboard";
-import Archives from "./pages/Archives";
-import Profile from "./pages/Profile";
+import {
+  Landing,
+  LoginForm,
+  SignupForm,
+  ForgotPassword,
+  ResetPassword,
+  Dashboard,
+  Archives,
+  Profile,
+} from "./pages";
 
 function App() {
   return (
