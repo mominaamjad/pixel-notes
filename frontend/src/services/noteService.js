@@ -138,6 +138,22 @@ const noteService = {
     }
   },
 
+  async exportNotes(format = "txt", token) {
+    try {
+      const res = await axios.get(`${API_URL}/notes/export`, {
+        params: { format },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: "blob",
+      });
+      return res;
+    } catch (err) {
+      handleError(err);
+      return null;
+    }
+  },
+
   async toggleArchive(noteId, token) {
     try {
       const res = await axios.patch(
