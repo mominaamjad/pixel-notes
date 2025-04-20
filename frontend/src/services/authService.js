@@ -56,5 +56,19 @@ const authService = {
       handleError(err);
     }
   },
+
+  async getUserProfile(token) {
+    try {
+      const response = await axios.get(`${API_URL}/users/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(response.data);
+      return response.data.data.user;
+    } catch (err) {
+      handleError(err);
+    }
+  },
 };
 export default authService;
