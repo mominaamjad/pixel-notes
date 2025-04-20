@@ -42,12 +42,34 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
   };
 
+  const updatePassword = async (data) => {
+    try {
+      setError(null);
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const updatedUser = await authService.updatePassword({
+        data,
+        token,
+      });
+      if (updatedUser?.token) {
+        localStorage.setItem("token", updatedUser.token);
+      }
+      return true;
+    } catch (err) {
+      setError(err.message || "Password update failed.");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     loading,
     error,
     login,
     signup,
     logout,
+    updatePassword,
     setError,
   };
 

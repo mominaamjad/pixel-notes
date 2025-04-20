@@ -9,5 +9,8 @@ export { default as NoteCard } from "./NoteCard";
 export { default as NoteModal } from "./NoteModal";
 export { default as NoteViewModal } from "./NoteViewModal";
 export { default as PixelLoader } from "./PixelLoader";
+export { default as PixelMenu } from "./PixelMenu";
 export { default as TagChip } from "./TagChip";
 export { default as ToolTipIcon } from "./ToolTipIcon";
+export { default as UpdatePasswordModal } from "./UpdatePasswordModal";
+export { default as ExportOptionsModal } from "./ExportOptionsModal";

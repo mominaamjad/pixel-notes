@@ -3,7 +3,7 @@ import DOMPurify from "dompurify";
 import { ArchiveX, Trash2 } from "lucide-react";
 import noteService from "../services/noteService";
 import { handleDeleteNote, handleToggleArchive } from "../utils/noteHandlers";
-import { Navbar, PixelLoader, ConfirmationModal } from "../components";
+import { NavBar, PixelLoader, ConfirmationModal } from "../components";
 
 const Archives = () => {
   const [loading, setLoading] = useState(false);
@@ -76,14 +76,17 @@ const Archives = () => {
         />
       )}
 
-      <Navbar />
+      <NavBar />
 
-      <h1 className="text-center text-custom-brown text-xl font-pixel my-6">
-        archives
+      <h1 className="text-center text-custom-dark-pink text-xl font-pixel my-6 drop-shadow-[2px_2px_#eba2b0]">
+        ARCHIVES
       </h1>
       <div className="p-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {notes.map((note) => (
-          <div key={note._id} className={`p-4 shadow bg-white`}>
+          <div
+            key={note._id}
+            className={`p-4 bg-white shadow-[6px_6px_0_#999999]`}
+          >
             <div>
               <div className="flex justify-between items-start mb-2">
                 <h2 className="font-jersey text-xl text-custom-brown truncate">

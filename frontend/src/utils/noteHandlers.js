@@ -121,3 +121,33 @@ export const handleApplyFilters = async (
   setNotes(filteredNotes);
   setShowFilterModal(false);
 };
+
+export const handleExportNotes = async (format) => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  try {
+    const res = await noteService.exportNotes(format, token);
+    if (!res) return;
+
+    if (res.status === 404) {
+      toast.error("No notes available to export.");
+      return;
+    }
+
+    const blob = new Blob([res.data], { type: res.headers["content-type"] });
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+
+    const fileName = `notes-export.${format}`;
+    link.setAttribute("download", fileName);
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    toast.error("No notes to export", err.message);
+  }
+};
