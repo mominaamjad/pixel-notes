@@ -10,8 +10,10 @@ const NoteCard = ({ note, onClick = () => {}, onEdit, onDelete, onStar }) => {
   return (
     <div
       onClick={onClick}
-      className="bg-neutral-50 shadow-md p-4 hover:shadow-lg transition-shadow border-l-8 cursor-pointer flex flex-col justify-between h-52"
-      style={{ borderLeftColor: note.color }}
+      className="bg-neutral-50 p-4 hover:shadow-lg transition-shadow cursor-pointer flex flex-col justify-between h-52"
+      style={{
+        boxShadow: `5px 5px 0 ${note.color}`,
+      }}
     >
       {showConfirmation && (
         <ConfirmationModal

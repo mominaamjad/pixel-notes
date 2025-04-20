@@ -83,7 +83,10 @@ const Archives = () => {
       </h1>
       <div className="p-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {notes.map((note) => (
-          <div key={note._id} className={`p-4 shadow bg-white`}>
+          <div
+            key={note._id}
+            className={`p-4 bg-white shadow-[6px_6px_0_#999999]`}
+          >
             <div>
               <div className="flex justify-between items-start mb-2">
                 <h2 className="font-jersey text-xl text-custom-brown truncate">
