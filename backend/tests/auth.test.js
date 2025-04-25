@@ -69,3 +69,34 @@ describe("POST /api/users/forgotPassword", () => {
     expect(res.body).to.have.property("message", "Token sent to email!");
   });
 });
+
+describe("POST /api/users/resetPassword/:token", () => {
+  before(async () => await connectTestDB());
+  beforeEach(async () => await clearTestDB());
+  after(async () => await closeTestDB());
+
+  it("should reset the password when given a valid reset token", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+
+    //   get the token
+    const forgotPassword = await chai
+      .request(app)
+      .post("/api/users/forgotPassword")
+      .send({ email: user.email });
+
+    const resetToken = forgotPassword.body.resetToken;
+
+    const newPassword = "newpassword123";
+    const res = await chai
+      .request(app)
+      .patch(`/api/users/resetPassword/${resetToken}`)
+      .send({
+        password: newPassword,
+        confirmPassword: newPassword,
+      });
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.property("status", "success");
+  });
+});

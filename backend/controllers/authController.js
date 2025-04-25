@@ -110,9 +110,17 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
     logger.info(`Password reset email sent to ${user.email}`);
 
-    res.status(200).json({
+    const responseData = {
       status: "success",
       message: "Token sent to email!",
+    };
+
+    if (process.env.NODE_ENV === "test") {
+      responseData.resetToken = resetToken;
+    }
+
+    res.status(200).json({
+      ...responseData,
     });
   } catch (error) {
     logger.error(`Error sending email: ${error.message}`);
