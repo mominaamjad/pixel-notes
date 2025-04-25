@@ -100,3 +100,31 @@ describe("POST /api/users/resetPassword/:token", () => {
     expect(res.body).to.have.property("status", "success");
   });
 });
+
+describe("GET /api/users/profile", () => {
+  before(async () => await connectTestDB());
+  beforeEach(async () => await clearTestDB());
+  after(async () => await closeTestDB());
+
+  it("should return user profile when provided a valid token", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+
+    const loginRes = await chai
+      .request(app)
+      .post("/api/users/login")
+      .send({ email: user.email, password: user.password });
+
+    const token = loginRes.body.token;
+
+    const res = await chai
+      .request(app)
+      .get("/api/users/profile")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.property("status", "success");
+    expect(res.body.data.user).to.have.property("email", user.email);
+    expect(res.body.data.user).to.not.have.property("password");
+  });
+});
