@@ -1,5 +1,4 @@
 const app = require("../index");
-const User = require("../models/users");
 const {
   chai,
   connectTestDB,
@@ -70,7 +69,7 @@ describe("POST /api/users/forgotPassword", () => {
   });
 });
 
-describe("POST /api/users/resetPassword/:token", () => {
+describe("PATCH /api/users/resetPassword/:token", () => {
   before(async () => await connectTestDB());
   beforeEach(async () => await clearTestDB());
   after(async () => await closeTestDB());
@@ -126,5 +125,38 @@ describe("GET /api/users/profile", () => {
     expect(res.body).to.have.property("status", "success");
     expect(res.body.data.user).to.have.property("email", user.email);
     expect(res.body.data.user).to.not.have.property("password");
+  });
+});
+
+describe("PATCH /api/users/updatePassword", () => {
+  before(async () => await connectTestDB());
+  beforeEach(async () => await clearTestDB());
+  after(async () => await closeTestDB());
+
+  it("should update the password when provided the correct current password", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+
+    const loginRes = await chai
+      .request(app)
+      .post("/api/users/login")
+      .send({ email: user.email, password: user.password });
+
+    const token = loginRes.body.token;
+
+    const newPassword = "newpassword123";
+    const res = await chai
+      .request(app)
+      .patch("/api/users/updatePassword")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        password: user.password,
+        newPassword: newPassword,
+        confirmNewPassword: newPassword,
+      });
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.property("status", "success");
+    expect(res.body).to.have.property("token");
   });
 });
