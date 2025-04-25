@@ -50,3 +50,22 @@ describe("POST /api/users/login", () => {
     expect(res.body).to.have.property("token");
   });
 });
+
+describe("POST /api/users/forgotPassword", () => {
+  before(async () => await connectTestDB());
+  beforeEach(async () => await clearTestDB());
+  after(async () => await closeTestDB());
+
+  it("should send a reset password email for valid email", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+
+    const res = await chai
+      .request(app)
+      .post("/api/users/forgotPassword")
+      .send({ email: user.email });
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.property("message", "Token sent to email!");
+  });
+});
