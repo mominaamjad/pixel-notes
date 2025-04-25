@@ -42,6 +42,20 @@ const loginTestUser = async (agent, user) => {
   return res.body.token;
 };
 
+const createTestNote = async (agent, token, note = {}) => {
+  return await agent
+    .post("/api/notes")
+    .set("Authorization", `Bearer ${token}`)
+    .send({
+      title: note.title || "Test Note",
+      content: note.content || "Content",
+      tags: note.tags || [],
+      color: note.color || null,
+      isFavorite: note.isFavorite || false,
+      isArchived: note.isArchived || false,
+    });
+};
+
 module.exports = {
   chai,
   connectTestDB,
@@ -50,4 +64,5 @@ module.exports = {
   generateTestUser,
   signupTestUser,
   loginTestUser,
+  createTestNote,
 };
