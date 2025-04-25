@@ -28,10 +28,26 @@ const generateTestUser = () => ({
   confirmPassword: "123456",
 });
 
+// for testing login
+const signupTestUser = async (agent, user) => {
+  return await agent.post("/api/users/signup").send(user);
+};
+
+//   for testing all protected routes
+const loginTestUser = async (agent, user) => {
+  const res = await agent.post("/api/users/login").send({
+    email: user.email,
+    password: user.password,
+  });
+  return res.body.token;
+};
+
 module.exports = {
   chai,
   connectTestDB,
   clearTestDB,
   closeTestDB,
   generateTestUser,
+  signupTestUser,
+  loginTestUser,
 };
