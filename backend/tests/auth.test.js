@@ -110,7 +110,7 @@ describe("GET /api/users/profile", () => {
     const user = generateTestUser();
     await signupTestUser(chai.request(app), user);
 
-    const token = await loginTestUser(agent, user);
+    const token = await loginTestUser(chai.request(app), user);
 
     const res = await chai
       .request(app)
@@ -133,7 +133,7 @@ describe("PATCH /api/users/updatePassword", () => {
     const user = generateTestUser();
     await signupTestUser(chai.request(app), user);
 
-    const token = await loginTestUser(agent, user);
+    const token = await loginTestUser(chai.request(app), user);
 
     const newPassword = "newpassword123";
     const res = await chai
