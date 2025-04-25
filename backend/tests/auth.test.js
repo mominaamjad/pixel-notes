@@ -6,6 +6,7 @@ const {
   closeTestDB,
   generateTestUser,
   signupTestUser,
+  loginTestUser,
 } = require("./utils");
 const expect = chai.expect;
 
@@ -109,12 +110,7 @@ describe("GET /api/users/profile", () => {
     const user = generateTestUser();
     await signupTestUser(chai.request(app), user);
 
-    const loginRes = await chai
-      .request(app)
-      .post("/api/users/login")
-      .send({ email: user.email, password: user.password });
-
-    const token = loginRes.body.token;
+    const token = await loginTestUser(agent, user);
 
     const res = await chai
       .request(app)
@@ -137,12 +133,7 @@ describe("PATCH /api/users/updatePassword", () => {
     const user = generateTestUser();
     await signupTestUser(chai.request(app), user);
 
-    const loginRes = await chai
-      .request(app)
-      .post("/api/users/login")
-      .send({ email: user.email, password: user.password });
-
-    const token = loginRes.body.token;
+    const token = await loginTestUser(agent, user);
 
     const newPassword = "newpassword123";
     const res = await chai
