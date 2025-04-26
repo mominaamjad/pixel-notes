@@ -173,3 +173,42 @@ describe("DELETE /api/notes/:id", () => {
     expect(res.status).to.equal(204);
   });
 });
+
+describe("GET /api/notes/export", () => {
+  before(async () => await connectTestDB());
+  beforeEach(async () => await clearTestDB());
+  after(async () => await closeTestDB());
+
+  it("should export notes as JSON for the logged-in user", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+    const token = await loginTestUser(chai.request(app), user);
+
+    await createTestNote(chai.request(app), token);
+    await createTestNote(chai.request(app), token);
+
+    const res = await chai
+      .request(app)
+      .get("/api/notes/export")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body.data.notes).to.be.an("array").with.length.greaterThan(0);
+  });
+
+  it("should export notes as CSV format", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+    const token = await loginTestUser(chai.request(app), user);
+    await createTestNote(chai.request(app), token);
+
+    const res = await chai
+      .request(app)
+      .get("/api/notes/export?format=csv")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.header["content-type"]).to.include("text/csv");
+    expect(res.text).to.include('"title","content"');
+  });
+});
