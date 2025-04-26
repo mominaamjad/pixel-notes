@@ -271,3 +271,31 @@ describe("GET /api/notes/download/:id", () => {
     expect(res.text).to.include("Title:");
   });
 });
+
+describe("GET /api/notes/tags", () => {
+  before(async () => await connectTestDB());
+  beforeEach(async () => await clearTestDB());
+  after(async () => await closeTestDB());
+
+  it("should get all unique tags for the logged-in user", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+    const token = await loginTestUser(chai.request(app), user);
+
+    await createTestNote(chai.request(app), token, {
+      tags: ["test", "work"],
+    });
+    await createTestNote(chai.request(app), token, {
+      tags: ["test", "more"],
+    });
+
+    const res = await chai
+      .request(app)
+      .get("/api/notes/tags")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body.status).to.equal("success");
+    expect(res.body.data.tags).to.be.an("array");
+  });
+});
