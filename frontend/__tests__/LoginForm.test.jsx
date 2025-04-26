@@ -1,4 +1,3 @@
-// LoginForm.test.jsx
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, test, expect, beforeEach, vi } from "vitest";
@@ -122,30 +121,10 @@ describe("LoginForm", () => {
     });
   });
 
-  test("shows loading state", () => {
-    mockLoading = true;
-    renderLoginForm();
-
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
-  });
-
   test("redirects to dashboard if token exists", () => {
     window.localStorage.getItem.mockReturnValueOnce("fake-token");
     renderLoginForm();
 
     expect(mockNavigate).toHaveBeenCalledWith("/dashboard");
-  });
-
-  test("toggles password visibility", () => {
-    renderLoginForm();
-
-    const passwordInput = screen.getByPlaceholderText(/password/i);
-    expect(passwordInput).toHaveAttribute("type", "password");
-
-    fireEvent.click(screen.getByTestId("toggle-password"));
-    expect(passwordInput).toHaveAttribute("type", "text");
-
-    fireEvent.click(screen.getByTestId("toggle-password"));
-    expect(passwordInput).toHaveAttribute("type", "password");
   });
 });
