@@ -151,3 +151,25 @@ describe("PATCH /api/notes/:id", () => {
     expect(res.body.data.note.tags).to.deep.equal(updatedData.tags);
   });
 });
+
+describe("DELETE /api/notes/:id", () => {
+  before(async () => await connectTestDB());
+  beforeEach(async () => await clearTestDB());
+  after(async () => await closeTestDB());
+
+  it("should delete the note with the specified ID for the logged-in user", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+    const token = await loginTestUser(chai.request(app), user);
+
+    const noteRes = await createTestNote(chai.request(app), token);
+    const noteId = noteRes.body.data.note._id;
+
+    const res = await chai
+      .request(app)
+      .delete(`/api/notes/${noteId}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).to.equal(204);
+  });
+});
