@@ -323,3 +323,27 @@ describe("PATCH /api/notes/:id/favorite", () => {
     expect(res.body.data.note).to.have.property("isFavorite");
   });
 });
+
+describe("PATCH /api/notes/:id/archive", () => {
+  before(async () => await connectTestDB());
+  beforeEach(async () => await clearTestDB());
+  after(async () => await closeTestDB());
+
+  it("should toggle archive status for a note", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+    const token = await loginTestUser(chai.request(app), user);
+
+    const noteRes = await createTestNote(chai.request(app), token);
+    const noteId = noteRes.body.data.note._id;
+
+    const res = await chai
+      .request(app)
+      .patch(`/api/notes/${noteId}/archive`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body.status).to.equal("success");
+    expect(res.body.data.note).to.have.property("isArchived");
+  });
+});
