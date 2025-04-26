@@ -116,3 +116,38 @@ describe("GET /api/notes/:id", () => {
     expect(res.body.data.note).to.have.property("_id", noteId);
   });
 });
+
+describe("PATCH /api/notes/:id", () => {
+  before(async () => await connectTestDB());
+  beforeEach(async () => await clearTestDB());
+  after(async () => await closeTestDB());
+
+  it("should update the note with the specified ID for the logged-in user", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+    const token = await loginTestUser(chai.request(app), user);
+
+    const noteRes = await createTestNote(chai.request(app), token);
+    const noteId = noteRes.body.data.note._id;
+
+    const updatedData = {
+      title: "Updated Title",
+      content: "Updated Content",
+      tags: ["updated", "test"],
+      color: "#F5A936",
+    };
+
+    const res = await chai
+      .request(app)
+      .patch(`/api/notes/${noteId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(updatedData);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.property("status", "success");
+    expect(res.body.data.note.title).to.equal(updatedData.title);
+    expect(res.body.data.note.content).to.equal(updatedData.content);
+    expect(res.body.data.note.color).to.equal(updatedData.color);
+    expect(res.body.data.note.tags).to.deep.equal(updatedData.tags);
+  });
+});
