@@ -92,3 +92,27 @@ describe("POST /api/notes", () => {
     expect(res.body.data.note).to.have.property("isFavorite", false);
   });
 });
+
+describe("GET /api/notes/:id", () => {
+  before(async () => await connectTestDB());
+  beforeEach(async () => await clearTestDB());
+  after(async () => await closeTestDB());
+
+  it("should return the note with the specified ID for the logged-in user", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+    const token = await loginTestUser(chai.request(app), user);
+
+    const noteRes = await createTestNote(chai.request(app), token);
+    const noteId = noteRes.body.data.note._id;
+
+    const res = await chai
+      .request(app)
+      .get(`/api/notes/${noteId}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.property("status", "success");
+    expect(res.body.data.note).to.have.property("_id", noteId);
+  });
+});
