@@ -1,10 +1,10 @@
 import React from "react";
+import { vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { vi } from "vitest";
-import Dashboard from "../src/pages/Dashboard";
 import noteService from "../src/services/noteService";
 import * as noteHandlers from "../src/utils/noteHandlers";
+import Dashboard from "../src/pages/Dashboard";
 
 vi.mock("../src/services/noteService");
 vi.mock("../src/utils/noteHandlers");
