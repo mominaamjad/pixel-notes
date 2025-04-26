@@ -10,7 +10,7 @@ const logger = pino({
       ignore: "pid,hostname",
     },
   },
-  level: process.env.NODE_ENV === "production" ? "info" : "debug",
+  level: process.env.NODE_ENV === "test" ? "silent" : "info",
 });
 
 const httpLogger = pinoHttp({
