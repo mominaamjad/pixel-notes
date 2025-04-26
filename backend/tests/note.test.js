@@ -212,3 +212,62 @@ describe("GET /api/notes/export", () => {
     expect(res.text).to.include('"title","content"');
   });
 });
+
+describe("GET /api/notes/download/:id", () => {
+  before(async () => await connectTestDB());
+  beforeEach(async () => await clearTestDB());
+  after(async () => await closeTestDB());
+
+  it("should download note in JSON by default", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+    const token = await loginTestUser(chai.request(app), user);
+
+    const noteRes = await createTestNote(chai.request(app), token);
+    const noteId = noteRes.body.data.note._id;
+
+    const res = await chai
+      .request(app)
+      .get(`/api/notes/download/${noteId}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body.data.note).to.have.property("_id", noteId);
+  });
+
+  it("should download note in CSV format", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+    const token = await loginTestUser(chai.request(app), user);
+
+    const noteRes = await createTestNote(chai.request(app), token);
+    const noteId = noteRes.body.data.note._id;
+
+    const res = await chai
+      .request(app)
+      .get(`/api/notes/download/${noteId}?format=csv`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.header["content-type"]).to.include("text/csv");
+    expect(res.text).to.include(noteId); // Ensure content
+  });
+
+  it("should download note in TXT format", async () => {
+    const user = generateTestUser();
+    await signupTestUser(chai.request(app), user);
+    const token = await loginTestUser(chai.request(app), user);
+
+    const noteRes = await createTestNote(chai.request(app), token);
+    const noteId = noteRes.body.data.note._id;
+
+    const res = await chai
+      .request(app)
+      .get(`/api/notes/download/${noteId}?format=txt`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).to.equal(200);
+    expect(res.header["content-type"]).to.include("text/plain");
+    expect(res.text).to.include("Title:");
+  });
+});
