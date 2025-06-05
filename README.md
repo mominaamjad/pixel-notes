@@ -90,7 +90,14 @@
 git clone https://github.com/mominaamjad/pixel-notes.git
 cd pixel-notes
 ```
+
 - Set up Env Files
+```
+copy /.example.env.local to .env.local (only required for sonar qube)
+copy /backend/.example.env to .env
+copy /backend/.example.env.test to .env.test (only required to run backend test cases)
+```
+
 - Run Backend
 ```
 cd backend
